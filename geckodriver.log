@@ -1,0 +1,164 @@
+1541342706667	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.2XmzIfVbGl3C"
+
+(firefox:22922): Gtk-WARNING **: 17:45:15.377: Theme parsing error: <data>:1:34: Expected ')' in color definition
+
+(firefox:22922): Gtk-WARNING **: 17:45:15.377: Theme parsing error: <data>:1:77: Expected ')' in color definition
+1541342723689	Marionette	INFO	Listening on port 42369
+1541342723789	Marionette	WARN	TLS certificate errors will be ignored for this session
+1541342754087	Marionette	INFO	Stopped listening on port 42369
+JavaScript error: resource://gre/modules/WebProgressChild.jsm, line 58: TypeError: this.mm.content is null
+1541342966063	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.v6lDM5e1xcNu"
+
+(firefox:24252): Gtk-WARNING **: 17:49:33.726: Theme parsing error: <data>:1:34: Expected ')' in color definition
+
+(firefox:24252): Gtk-WARNING **: 17:49:33.726: Theme parsing error: <data>:1:77: Expected ')' in color definition
+1541342981609	Marionette	INFO	Listening on port 32889
+1541342981668	Marionette	WARN	TLS certificate errors will be ignored for this session
+1541343015911	Marionette	INFO	Stopped listening on port 32889
+1541343249741	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.gutwnliDS2oC"
+
+(firefox:25613): Gtk-WARNING **: 17:54:16.483: Theme parsing error: <data>:1:34: Expected ')' in color definition
+
+(firefox:25613): Gtk-WARNING **: 17:54:16.483: Theme parsing error: <data>:1:77: Expected ')' in color definition
+1541343262201	Marionette	INFO	Listening on port 33757
+1541343262297	Marionette	WARN	TLS certificate errors will be ignored for this session
+1541343292485	Marionette	INFO	Stopped listening on port 33757
+1541343336074	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.ERtj9CAQdbFw"
+
+(firefox:26888): Gtk-WARNING **: 17:55:39.764: Theme parsing error: <data>:1:34: Expected ')' in color definition
+
+(firefox:26888): Gtk-WARNING **: 17:55:39.764: Theme parsing error: <data>:1:77: Expected ')' in color definition
+1541343344455	Marionette	INFO	Listening on port 46847
+1541343344537	Marionette	WARN	TLS certificate errors will be ignored for this session
+1541343413324	Marionette	INFO	Stopped listening on port 46847
+[Parent 26888, Gecko_IOThread] WARNING: pipe error (78): Соединение разорвано другой стороной: file /build/firefox-4VfQCB/firefox-63.0+build2/ipc/chromium/src/chrome/common/ipc_channel_posix.cc, line 356
+1541343617464	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.w5yuxJIUwsMd"
+
+(firefox:28266): Gtk-WARNING **: 18:00:19.717: Theme parsing error: <data>:1:34: Expected ')' in color definition
+
+(firefox:28266): Gtk-WARNING **: 18:00:19.717: Theme parsing error: <data>:1:77: Expected ')' in color definition
+1541343624286	Marionette	INFO	Listening on port 42869
+1541343624398	Marionette	WARN	TLS certificate errors will be ignored for this session
+1541343649149	Marionette	INFO	Stopped listening on port 42869
+JavaScript error: resource://gre/modules/WebProgressChild.jsm, line 58: TypeError: this.mm.content is null
+[Parent 28266, Gecko_IOThread] WARNING: pipe error (120): Соединение разорвано другой стороной: file /build/firefox-4VfQCB/firefox-63.0+build2/ipc/chromium/src/chrome/common/ipc_channel_posix.cc, line 356
+1541343927957	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.ICRpaJ5kZlVZ"
+
+(firefox:29836): Gtk-WARNING **: 18:05:31.692: Theme parsing error: <data>:1:34: Expected ')' in color definition
+
+(firefox:29836): Gtk-WARNING **: 18:05:31.692: Theme parsing error: <data>:1:77: Expected ')' in color definition
+1541343937892	Marionette	INFO	Listening on port 46195
+1541343938476	Marionette	WARN	TLS certificate errors will be ignored for this session
+1541343969297	Marionette	INFO	Stopped listening on port 46195
+JavaScript error: resource://gre/modules/WebProgressChild.jsm, line 58: TypeError: this.mm.content is null
+JavaScript error: resource://gre/modules/WebProgressChild.jsm, line 58: TypeError: this.mm.content is null
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+1541343980490	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.YLtuOz6Kf18A"
+*** You are running in headless mode.
+1541343990745	Marionette	INFO	Listening on port 35233
+1541343990879	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://www.avito.st/s/cc/chunks/dae460df044bb3c98ae2.js, line 1: Error: WebGL warning: <SetDimensions>: Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://www.avito.st/s/cc/chunks/dae460df044bb3c98ae2.js, line 1: Error: WebGL warning: <SetDimensions>: Failed to create WebGL context: WebGL creation failed: 
+* Can't use WebGL in headless mode (https://bugzil.la/1375585).
+
+(/usr/lib/firefox/firefox:31144): dconf-WARNING **: 18:06:45.818: Unable to open /var/lib/snapd/desktop/dconf/profile/user: Отказано в доступе
+JavaScript error: jar:file:///usr/lib/firefox/omni.ja!/components/PeerConnection.js, line 1894: TypeError: this._dompc._pc is undefined
+1541344006883	Marionette	INFO	Stopped listening on port 35233
+JavaScript error: resource://gre/modules/WebProgressChild.jsm, line 58: TypeError: this.mm.content is null
+1541344082647	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.oMDgSMOflCWu"
+*** You are running in headless mode.
+1541344089079	Marionette	INFO	Listening on port 33117
+1541344089177	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://www.avito.st/s/cc/chunks/dae460df044bb3c98ae2.js, line 1: Error: WebGL warning: <SetDimensions>: Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://www.avito.st/s/cc/chunks/dae460df044bb3c98ae2.js, line 1: Error: WebGL warning: <SetDimensions>: Failed to create WebGL context: WebGL creation failed: 
+* Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Failed to create WebGL context: WebGL creation failed: 
+* Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Failed to create WebGL context: WebGL creation failed: 
+* Can't use WebGL in headless mode (https://bugzil.la/1375585).
+1541344116698	Marionette	INFO	Stopped listening on port 33117
+JavaScript error: resource://gre/modules/WebProgressChild.jsm, line 58: TypeError: this.mm.content is null
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+1541344218523	mozrunner::runner	INFO	Running command: "/usr/bin/firefox" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "/tmp/rust_mozprofile.0gvMdnqDzJGI"
+*** You are running in headless mode.
+1541344225964	Marionette	INFO	Listening on port 33921
+1541344226059	Marionette	WARN	TLS certificate errors will be ignored for this session
+JavaScript warning: https://www.avito.st/s/cc/chunks/dae460df044bb3c98ae2.js, line 1: Error: WebGL warning: <SetDimensions>: Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://www.avito.st/s/cc/chunks/dae460df044bb3c98ae2.js, line 1: Error: WebGL warning: <SetDimensions>: Failed to create WebGL context: WebGL creation failed: 
+* Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Failed to create WebGL context: WebGL creation failed: 
+* Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Can't use WebGL in headless mode (https://bugzil.la/1375585).
+JavaScript warning: https://api-maps.yandex.ru/2.1/?lang=ru-RU&onload=avito.ymapsReady, line 1: Error: WebGL warning: <SetDimensions>: Failed to create WebGL context: WebGL creation failed: 
+* Can't use WebGL in headless mode (https://bugzil.la/1375585).
+1541344254088	Marionette	INFO	Stopped listening on port 33921
+[Parent 32157, Gecko_IOThread] WARNING: pipe error (65): Соединение разорвано другой стороной: file /build/firefox-4VfQCB/firefox-63.0+build2/ipc/chromium/src/chrome/common/ipc_channel_posix.cc, line 356
+JavaScript error: resource://gre/modules/WebProgressChild.jsm, line 58: TypeError: this.mm.content is null
+
+###!!! [Child][MessageChannel] Error: (msgtype=0x580027,name=PNecko::Msg_RemoveRequestContext) Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+[Parent 32157, Gecko_IOThread] WARNING: pipe error (112): Соединение разорвано другой стороной: file /build/firefox-4VfQCB/firefox-63.0+build2/ipc/chromium/src/chrome/common/ipc_channel_posix.cc, line 356
