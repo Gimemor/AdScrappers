@@ -11,27 +11,26 @@ from avitoscrapper.spiders.bazarpnz import BazarpnzSpider
 push_url = 'http://realty.zmservice.ru/api/create_order.json'
 
 scrappers = [
-    # (AvitoRuSpider, 'avito.json'),
-    # (CianSpider, 'cian.json'),
-    (BazarpnzSpider, 'bazarspider.json')
+    AvitoRuSpider,
+    CianSpider,
+    BazarpnzSpider,
 ]
+
 os.environ["http_proxy"] = "http://localhost:8888"
-
+output_file = 'output.json'
 for scrapper in scrappers:
-    """
-
-    if os.path.isfile(scrapper[1]):
-        os.remove(scrapper[1])
+    if os.path.isfile(output_file):
+        os.remove(output_file)
     settings = get_project_settings()
-    settings['FEED_URL'] = scrapper[1]
     process = CrawlerProcess(settings)
-    process.crawl(scrapper[0])
+    process.crawl(scrapper)
     process.start()
-    """
-    with open('output.json', 'r') as f:
+    with open(output_file, 'r') as f:
         text = f.read()
         items = json.loads(text.encode("utf8"))
         for item in items:
             response = requests.post(push_url, data=json.dumps({'order': item}),
                                      headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
             print(response.content)
+
+
