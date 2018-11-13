@@ -26,7 +26,7 @@ class AvitoRuSpider(scrapy.Spider):
         scrapy.Spider.__init__(self)
         self.driver_options = Options()
         self.driver_options.headless = True
-        self.driver = webdriver.Chrome(executable_path='../chromedriver',
+        self.driver = webdriver.Chrome(executable_path='chromedriver',
                                         options=self.driver_options)
 
     def get_ad_data_from_category(self, item):

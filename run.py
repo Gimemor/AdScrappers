@@ -1,6 +1,7 @@
 import scrapy
 import requests
 import os
+import sys
 import json
 from scrapy.crawler import CrawlerProcess
 from scrapy.utils.project   import get_project_settings
@@ -17,6 +18,7 @@ scrappers = [
 ]
 
 #os.environ["http_proxy"] = "http://localhost:8888"
+sys.path.append(os.getcwd())
 output_file = 'output.json'
 if os.path.isfile(output_file):
     os.remove(output_file)
