@@ -1,0 +1,10 @@
+scrapy
+selenium
+pytesseract
+pillow
+requests
+openpyxl
+pandas
+xlrd
+js2py
+scrapy-fake-useragent
