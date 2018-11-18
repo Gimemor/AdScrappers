@@ -8,3 +8,4 @@ pandas
 xlrd
 js2py
 scrapy-fake-useragent
+xvfbwrapper
