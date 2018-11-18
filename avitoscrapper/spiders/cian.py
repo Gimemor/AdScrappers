@@ -17,7 +17,8 @@ class CianSpider(scrapy.Spider):
     name = 'cian'
     owner_only = True
     custom_settings = {
-        'ROBOTSTXT_OBEY': False
+        'ROBOTSTXT_OBEY': False,
+        'DOWNLOAD_DELAY': 93.1
     }
     allowed_domains = ['cian.ru']
     base_url_format = 'https://penza.cian.ru/export/xls/offers'
@@ -63,28 +64,28 @@ class CianSpider(scrapy.Spider):
     # noinspection PyMethodMayBeStatic
     def get_title_column(self, df, i):
         for j in df.columns:
-            if 'название' in j.lower():
+            if 'название' in j.lower() and df[j][i] != 'nan':
                 return df[j][i]
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_link(self, df, i):
         for j in df.columns:
-            if 'ссылка' in j.lower():
+            if 'ссылка' in j.lower() and df[j][i]:
                 return df[j][i]
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_cost(self, df, i):
         for j in df.columns:
-            if 'цена' in j.lower() or 'стоимость' in j.lower():
+            if ('цена' in j.lower() or 'стоимость' in j.lower()) and df[j][i]:
                 return df[j][i]
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_floor(self, df, i):
         for j in df.columns:
-            if 'дом' in j.lower():
+            if 'дом' in j.lower()  and df[j][i]:
                 description = df[j][i]
                 match_result = CianSpider.floor_regex.match(description)
                 return None if not match_result else match_result.groups(0)[0]
@@ -93,42 +94,42 @@ class CianSpider(scrapy.Spider):
     # noinspection PyMethodMayBeStatic
     def get_flat_area(self, df, i):
         for j in df.columns:
-            if 'площадь' in j.lower():
+            if 'площадь' in j.lower() and df[j][i]:
                 return df[j][i]
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_phone(self, df, i):
         for j in df.columns:
-            if 'телефон' in j.lower():
+            if 'телефон' in j.lower() and df[j][i]:
                 return str(df[j][i])
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_address(self, df, i):
         for j in df.columns:
-            if 'адрес' in j.lower():
+            if 'адрес' in j.lower() and df[j][i]:
                 return df[j][i]
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_category(self, df, i):
         for j in df.columns:
-            if 'количество комнат' in j.lower():
+            if 'количество комнат' in j.lower() and df[j][i]:
                 return 'Комнат '+ str(df[j][i])
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_description(self, df, i):
         for j in df.columns:
-            if 'описание' in j.lower():
+            if 'описание' in j.lower() and df[j][i]:
                 return 'Комнат ' + str(df[j][i])
         return None
 
     # noinspection PyMethodMayBeStatic
     def get_floor_count(self, df, i):
         for j in df.columns:
-            if 'дом' in j.lower():
+            if 'дом' in j.lower()  and df[j][i]:
                 description = df[j][i]
                 match_result = CianSpider.floor_regex.match(description)
                 return None if not match_result else match_result.groups(0)[1]
@@ -174,9 +175,10 @@ class CianSpider(scrapy.Spider):
             with open(CianSpider.file, 'wb') as f:
                 f.write(xls_response.content)
         df = pandas.read_excel(CianSpider.file)
+        df = df.where((pandas.notnull(df)), None)
         items = self.parse_ad(df, response)
         for item in items:
             yield item
         os.remove(CianSpider.file)
         if url:
-            yield response.follow(url, callback=self.parse)
+            yield response.follow(url, callback=self.parse, meta={'dont_merge_cookies': True})
