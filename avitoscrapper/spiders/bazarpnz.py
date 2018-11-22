@@ -57,7 +57,6 @@ class BazarpnzSpider(scrapy.Spider):
     def get_ad_data_from_category(self, item, response):
         mode_regexp = re.compile(r'[&?]s=(\d+)', re.I)
         mode = mode_regexp.findall(response.url)
-        print(mode[0])
         return {
             'url': item.xpath('.//td[contains(@class, \'text\')]//a/@href').extract_first(),
             'order_type': int(mode[0]) if mode else -1,

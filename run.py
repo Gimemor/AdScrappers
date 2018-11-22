@@ -17,6 +17,7 @@ scrappers = [
   BazarpnzSpider
 ]
 #os.environ["http_proxy"] = "http://localhost:8888"
+os.environ["http_proxy"] = "lum-customer-hl_d97be066-zone-static:kj6yq9c0m4qt@zproxy.lum-superproxy.io:22225"
 
 with Xvfb() as xvfb:
     sys.path.append(os.getcwd())
