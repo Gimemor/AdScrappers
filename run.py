@@ -12,11 +12,11 @@ from xvfbwrapper import Xvfb
 
 
 scrappers = [
-  #  AvitoRuSpider,
-    CianSpider,
-  #BazarpnzSpider
+  AvitoRuSpider,
+  CianSpider,
+  BazarpnzSpider
 ]
-os.environ["http_proxy"] = "http://localhost:8888"
+#os.environ["http_proxy"] = "http://localhost:8888"
 
 with Xvfb() as xvfb:
     sys.path.append(os.getcwd())
