@@ -5,10 +5,10 @@ import traceback
 import datetime
 from scrapy.loader import ItemLoader
 from ..items import Ad
+from ..order_types import OrderTypes
 import js2py
 import io
 import re
-
 
 
 class BazarpnzSpider(scrapy.Spider):
@@ -16,10 +16,10 @@ class BazarpnzSpider(scrapy.Spider):
     allowed_domains = ['bazarpnz.ru']
     start_urls = [
         # the S param must be the last one since we use that to determine order type
-        'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=1',
-        'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=2',
+        #'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=1',
+        #'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=2',
         #'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=3',
-        #'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=4',
+        'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=4',
         # 'http://bazarpnz.ru/nedvizhimost/?&s=5',
         # 'http://bazarpnz.ru/nedvizhimost/?&s=6',
         # 'http://bazarpnz.ru/nedvizhimost/?&s=7',
@@ -27,19 +27,22 @@ class BazarpnzSpider(scrapy.Spider):
     ]
 
     ORDER_TYPE = {
-        # BAZAR BUY -> OUR BUY
-        1: 3,
         # BAZAR SELL -> OUT SELL
-        2: 2,
+        1: OrderTypes['SALE'],
+        # BAZAR BUY -> OUR BUY
+        2: OrderTypes['BUY'],
         # BAZAR RENT -> OUR RENT
-        4: 0,
+        4: OrderTypes['RENT'],
         # BAZAR RENT OUT -> OUR RENT OUT
-        3: 1
+        3: OrderTypes['RENT_OUT']
     }
 
     def __init__(self):
         scrapy.Spider.__init__(self)
+        self.uptodate_count  = 0
+        self.outdate_treshold = 30
         self.item_selector = "//tr[contains(@class, 'norm') and .//div[contains(@class, 'vdatext')]]"
+       # self.item_selector = "//table[contains(@class, 'list')]//tr[.//div[contains(@class, 'vdatext')]]"
         self.js_context = js2py.EvalJs()
 
     # noinspection PyMethodMayBeStatic
@@ -54,9 +57,9 @@ class BazarpnzSpider(scrapy.Spider):
     def get_ad_data_from_category(self, item, response):
         mode_regexp = re.compile(r'[&?]s=(\d+)', re.I)
         mode = mode_regexp.findall(response.url)
+        print(mode[0])
         return {
             'url': item.xpath('.//td[contains(@class, \'text\')]//a/@href').extract_first(),
-            'scrapping_eligible': self.check_ad_scrapping_eligible(item),
             'order_type': int(mode[0]) if mode else -1,
             'title': item.xpath('.//td[contains(@class, \'text\')]//a/text()').extract_first()
         }
@@ -148,7 +151,13 @@ class BazarpnzSpider(scrapy.Spider):
         ad_loader.add_value('link', response.url)
         # order_type
         ad_loader.add_value('order_type', BazarpnzSpider.ORDER_TYPE[meta['order_type']])
-        ad_loader.add_value('placed_at', self.get_ad_date(response))
+        print(meta['order_type'], ' ', BazarpnzSpider.ORDER_TYPE[meta['order_type']])
+        date = self.get_ad_date(response)
+        ad_loader.add_value('placed_at', date)
+
+        if (datetime.datetime.now() - date).days < self.outdate_treshold:
+            self.uptodate_count += 1
+
         ad_loader.add_value('city', 'Пенза')
         ad_loader.add_value('cost', self.get_cost(response))
         ad_loader.add_value('phone', self.get_phone(response))
@@ -167,16 +176,17 @@ class BazarpnzSpider(scrapy.Spider):
         return ad_loader.load_item()
 
     def parse(self, response):
-        last_reached = True
+        """
+        @url  http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=4
+        """
+        self.uptodate_count = 0
         for item in response.xpath(self.item_selector):
             ad = self.get_ad_data_from_category(item, response)
-            if ad['scrapping_eligible']:
-                last_reached = False
-                yield response.follow(ad['url'],
-                                      meta={'ad': ad, 'dont_merge_cookies': True},
-                                      headers={'Referer': None},
-                                      callback=self.parse_ad)
-        if not last_reached:
+            yield response.follow(ad['url'],
+                                  meta={'ad': ad, 'dont_merge_cookies': True},
+                                  headers={'Referer': None},
+                                  callback=self.parse_ad)
+        if self.uptodate_count > 0:
             url = response.xpath("//form[@name='topage']/a[./text()='следующей']/@href")\
                 .extract_first()
             yield response.follow(url + '?', callback=self.parse)

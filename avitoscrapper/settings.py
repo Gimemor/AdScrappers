@@ -98,3 +98,7 @@ AUTOTHROTTLE_DEBUG = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 FEED_EXPORT_ENCODING = 'utf-8'
+
+ITEM_PIPELINES = {
+    'avitoscrapper.pipelines.AvitoscrapperPipeline': 300,
+}
