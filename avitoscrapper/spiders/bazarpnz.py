@@ -16,9 +16,9 @@ class BazarpnzSpider(scrapy.Spider):
     allowed_domains = ['bazarpnz.ru']
     start_urls = [
         # the S param must be the last one since we use that to determine order type
-        #'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=1',
-        #'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=2',
-        #'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=3',
+        'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=1',
+        'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=2',
+        'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=3',
         'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=4',
         # 'http://bazarpnz.ru/nedvizhimost/?&s=5',
         # 'http://bazarpnz.ru/nedvizhimost/?&s=6',
@@ -40,7 +40,7 @@ class BazarpnzSpider(scrapy.Spider):
     def __init__(self):
         scrapy.Spider.__init__(self)
         self.uptodate_count  = 0
-        self.outdate_treshold = 30
+        self.outdate_treshold = 2
         self.item_selector = "//tr[contains(@class, 'norm') and .//div[contains(@class, 'vdatext')]]"
        # self.item_selector = "//table[contains(@class, 'list')]//tr[.//div[contains(@class, 'vdatext')]]"
         self.js_context = js2py.EvalJs()
@@ -82,8 +82,18 @@ class BazarpnzSpider(scrapy.Spider):
             }                                                                   
         """ + element
         self.js_context.execute(full_js)
-        phone_regexp = re.compile('tel: (\d+)', re.I)
-        phone = phone_regexp.findall(self.js_context.output)
+        output = self.js_context.output
+        print(output)
+        output = output.replace('&#45;', '-')
+        output = output.replace('&#43;', ' ')
+        if 'href' in output:
+            href_regex = re.compile('tel:\s*([\d\ -]+)', re.I)
+            phones = href_regex.findall(output)
+            return ', '.join(phones) if phones else None
+        phone_regexp = re.compile('[\d\-\(\)\,\ ]+', re.I)
+        phone = phone_regexp.findall(output)
+        if not phone:
+            return None
         return phone[0] if phone else None
 
     # noinspection PyMethodMayBeStatic
@@ -143,6 +153,9 @@ class BazarpnzSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def parse_ad(self, response):
+        """
+        @url: http://bazarpnz.ru/ann/36330946/
+        """
         meta = response.meta['ad']
         ad_loader = ItemLoader(item=Ad(), response=response)
         ad_loader.add_value('title', meta['title'])

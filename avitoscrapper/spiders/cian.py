@@ -2,7 +2,6 @@
 import scrapy
 import logging
 import traceback
-import datetime
 from scrapy.loader import ItemLoader
 from ..items import Ad
 from ..order_types import OrderTypes
@@ -11,7 +10,7 @@ import os
 import time
 from pandas import *
 import json
-import time
+import datetime
 import re
 
 
@@ -20,7 +19,7 @@ class CianSpider(scrapy.Spider):
     owner_only = True
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
-        'DOWNLOAD_DELAY': 23.1
+        'DOWNLOAD_DELAY': 113.1
     }
     allowed_domains = ['cian.ru']
     base_url_format = 'https://penza.cian.ru/export/xls/offers'
@@ -48,12 +47,30 @@ class CianSpider(scrapy.Spider):
     def get_column(self, df, i, j):
         return df[df.columns[j]][i]
 
-
     def get_ad_data_from_category(self, item):
         return {
             'url': item.xpath('.//a[contains(@class, \'c6e8ba5398-header--1_m0_\')]/@href').extract_first(),
-            'scrapping_eligible': self.check_ad_scrapping_eligible(item)
+            'scrapping_eligible': self.check_ad_scrapping_eligible(item),
+            'date': self.get_ad_date_from_list(item)
         }
+
+    # noinspection PyMethodMayBeStatic
+    def get_ad_date_from_list(self, item):
+        raw_date = response.xpath(".//div[contains(@class, 'c6e8ba5398-absolute--2Znfs')]/text()").extract_first()
+        if not raw_date:
+            return datetime.datetime.today()
+        raw_date = raw_date.lower()
+        date = CianSpider.date_regex.findall(raw_date)
+        if not date:
+            return datetime.datetime.today()
+        first = date[0].lower()
+        if not first or 'сегодня' in first:
+            return datetime.datetime.today()
+        if 'вчера' in first:
+            return datetime.datetime.today() - datetime.timedelta(1)
+        result = month_format(first)
+        return datetime.strptime(result, '%d %m %Y')
+
 
     # noinspection PyMethodMayBeStatic
     def get_title_column(self, df, i):
@@ -111,7 +128,7 @@ class CianSpider(scrapy.Spider):
         for j in df.columns:
             if 'количество комнат' in j.lower() and df[j][i]:
                 return 'Комнат '+ str(df[j][i])
-        return None
+        return 'Неизвестно'
 
     # noinspection PyMethodMayBeStatic
     def get_description(self, df, i):
@@ -138,7 +155,7 @@ class CianSpider(scrapy.Spider):
             item['link'] = self.get_link(df, i)
             item['contact_name'] = None
             item['order_type'] = OrderTypes['RENT'] if 'rent' in response.url else OrderTypes['SALE']
-            item['placed_at'] = datetime.today()
+            item['placed_at'] = datetime.datetime.today()
             item['city'] = "Пенза"
             item['cost'] = self.get_cost(df, i)
             item['floor'] = self.get_floor(df, i)
@@ -156,15 +173,18 @@ class CianSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_ad_date(self, response):
-        raw_date = response.xpath("//div[contains(@class, 'a10a3f92e9--container--3nJ0d')]/text()").extract_first().lower()
+        raw_date = response.xpath("//div[contains(@class, 'a10a3f92e9--container--3nJ0d')]/text()").extract_first()
+        if not raw_date:
+            return datetime.datetime.today()
+        raw_date = raw_date.lower()
         date = CianSpider.date_regex.findall(raw_date)
         if not date:
             return datetime.datetime.today()
         first = date[0].lower()
         if not first or 'сегодня' in first:
-            return datetime.today()
+            return datetime.datetime.today()
         if 'вчера' in first:
-            return datetime.today() - datetime.timedelta(1)
+            return datetime.datetime.today() - datetime.timedelta(1)
         result = month_format(first)
         return datetime.strptime(result, '%d %m %Y')
 
@@ -181,8 +201,7 @@ class CianSpider(scrapy.Spider):
         time.sleep(15)
         xls_response = requests.get(request,
                                     headers={
-                                        'referer': response.url,
-                                        "User-Agent": response.request.headers['User-Agent']
+                                        'referer': response.url
                                      })
         if xls_response.status_code == 200:
             with open(CianSpider.file, 'wb') as f:
@@ -192,14 +211,13 @@ class CianSpider(scrapy.Spider):
         items = self.parse_ad(df, response)
         os.remove(CianSpider.file)
         for item in items:
-            # yield item
             yield response.follow(item['link'],
                                   headers={
                                       "Referer": response.url,
-                                      "Host": "penza.cian.ru",
-                                      "User-Agent": response.request.headers['User-Agent']
+                                      "Host": "penza.cian.ru"
                                   },
                                   meta={'item': item},
                                   callback=self.parse_additional_item)
+
         if url:
             yield response.follow(url, callback=self.parse, meta={'dont_merge_cookies': True})

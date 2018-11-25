@@ -25,7 +25,7 @@ class AvitoRuSpider(scrapy.Spider):
     start_urls = ['https://www.avito.ru/penza/kvartiry?view=list&user=1&s=104']
     item_selector = '//div[contains(@class, \'item_list\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
-    outdate_treshold = 30
+    outdate_treshold = 2
     custom_settings = {
         'ROBOTSTXT_OBEY': True,
         'DOWNLOAD_DELAY': 21.1
@@ -49,6 +49,7 @@ class AvitoRuSpider(scrapy.Spider):
         if first == 'вчера':
             return datetime.date.today() - datetime.timedelta(1)
         result = month_format(first)
+        print(result)
         return datetime.datetime.strptime(result, '%d %m %Y')
 
     def get_ad_data_from_category(self, item):
@@ -199,7 +200,7 @@ class AvitoRuSpider(scrapy.Spider):
 
     def parse_ad(self, response):
         """
-        @url https://www.avito.ru/penza/kvartiry/studiya_17_m_89_et._1631035614
+        @url https://www.avito.ru/penza/kvartiry/2-k_kvartira_47.7_m_45_et._1310404007
         """
         ad_loader = ItemLoader(item=Ad(), response=response)
         ad_loader.add_xpath('title', '//span[contains(@class, \'title-info-title-text\')]/text()')
