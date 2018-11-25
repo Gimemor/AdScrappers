@@ -154,7 +154,7 @@ class CianSpider(scrapy.Spider):
             item['source'] = 2
             item['link'] = self.get_link(df, i)
             item['contact_name'] = None
-            item['order_type'] = OrderTypes['RENT'] if 'rent' in response.url else OrderTypes['SALE']
+            item['order_type'] = OrderTypes['RENT_OUT'] if 'rent' in response.url else OrderTypes['SALE']
             item['placed_at'] = datetime.datetime.today()
             item['city'] = "Пенза"
             item['cost'] = self.get_cost(df, i)
