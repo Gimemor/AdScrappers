@@ -5,6 +5,7 @@ import traceback
 import datetime
 from scrapy.loader import ItemLoader
 from ..items import Ad
+from ..logger import Logger
 from ..order_types import OrderTypes
 import js2py
 import io
@@ -13,7 +14,11 @@ import re
 
 class BazarpnzSpider(scrapy.Spider):
     name = 'bazarpnz.ru'
-    allowed_domains = ['bazarpnz.ru']
+    allowed_domains = ['bazarpnz.ru', 'i58.ru']
+    custom_settings = {
+        'ROBOTSTXT_OBEY': True,
+        'DOWNLOAD_DELAY': 1.1
+    }
     start_urls = [
         # the S param must be the last one since we use that to determine order type
         'http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=1',
@@ -41,8 +46,8 @@ class BazarpnzSpider(scrapy.Spider):
         scrapy.Spider.__init__(self)
         self.uptodate_count  = 0
         self.outdate_treshold = 2
-        self.item_selector = "//tr[contains(@class, 'norm') and .//div[contains(@class, 'vdatext')]]"
-       # self.item_selector = "//table[contains(@class, 'list')]//tr[.//div[contains(@class, 'vdatext')]]"
+        #self.item_selector = "//tr[contains(@class, 'norm') and .//div[contains(@class, 'vdatext')]]"
+        self.item_selector = "//table[contains(@class, 'list')]//tr[.//div[contains(@class, 'vdatext')]]"
         self.js_context = js2py.EvalJs()
 
     # noinspection PyMethodMayBeStatic
@@ -66,7 +71,11 @@ class BazarpnzSpider(scrapy.Spider):
     # noinspection PyMethodMayBeStatic
     def get_cost(self, response):
         cost = response.xpath('//span[@class="price"]/text()').extract_first()
-        return cost
+        if cost is None:
+            return None
+        cost = cost.replace(' ', '').replace('\xa0', '')
+        output = re.findall('\d+', cost)
+        return output[0] if output else ''
 
     # noinspection PyMethodMayBeStatic
     def get_phone(self, response):
@@ -83,16 +92,18 @@ class BazarpnzSpider(scrapy.Spider):
         """ + element
         self.js_context.execute(full_js)
         output = self.js_context.output
-        print(output)
-        output = output.replace('&#45;', '-')
-        output = output.replace('&#43;', ' ')
+        output = output.replace('&#45;', '')
+        output = output.replace('&#43;', '')
+        output = output.replace('&#40;', '')
+        output = output.replace('&#41;', '')
         if 'href' in output:
             href_regex = re.compile('tel:\s*([\d\ -]+)', re.I)
             phones = href_regex.findall(output)
-            return ', '.join(phones) if phones else None
-        phone_regexp = re.compile('[\d\-\(\)\,\ ]+', re.I)
+            return phones[0] if phones else None
+        phone_regexp = re.compile('[\d\-\(\)\ ]+', re.I)
         phone = phone_regexp.findall(output)
         if not phone:
+            Logger.log("WARN", "Unable to parse phone from " + response.url)
             return None
         return phone[0] if phone else None
 
@@ -106,9 +117,16 @@ class BazarpnzSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_category(self, response):
+        category_number = '3'
+        if 'i58.ru' in response.url:
+            category_number = '4'
+        breadcrumb_category = response.xpath('//div[contains(@id, \'nav\')]/a[' + category_number + ']/text()').extract_first()
+        if breadcrumb_category is not None:
+            return breadcrumb_category
         regexp = re.compile("Количество\s*комнат:\s*(\d+)\s*", re.I)
         elements = response.xpath("//p[@class='contact_info']/text()").extract_first()
         if not elements:
+            Logger.log("WARN", "Unable to parse category from " + response.url)
             return 'Не указано'
         result = regexp.findall(elements)
         return 'Комнат: {}'.format(result[0]) if result else 'Неизвестно'
@@ -116,7 +134,7 @@ class BazarpnzSpider(scrapy.Spider):
     # noinspection PyMethodMayBeStatic
     def get_total_square(self, response):
         regexp = re.compile("Общая\s*площадь:\s*(\d+)\s*", re.I)
-        elements = response.xpath("//p[@class='contact_info']/text()").extract_first()
+        elements = '\n'.join(response.xpath("//p[@class='contact_info']/text()").extract())
         if not elements:
             return None
         result = regexp.findall(elements)
@@ -156,6 +174,7 @@ class BazarpnzSpider(scrapy.Spider):
         """
         @url: http://bazarpnz.ru/ann/36330946/
         """
+
         meta = response.meta['ad']
         ad_loader = ItemLoader(item=Ad(), response=response)
         ad_loader.add_value('title', meta['title'])
@@ -163,7 +182,6 @@ class BazarpnzSpider(scrapy.Spider):
         ad_loader.add_value('link', response.url)
         # order_type
         ad_loader.add_value('order_type', BazarpnzSpider.ORDER_TYPE[meta['order_type']])
-        print(meta['order_type'], ' ', BazarpnzSpider.ORDER_TYPE[meta['order_type']])
         date = self.get_ad_date(response)
         ad_loader.add_value('placed_at', date)
 
@@ -177,6 +195,7 @@ class BazarpnzSpider(scrapy.Spider):
         ad_loader.add_value('address', self.get_address(response))
         ad_loader.add_value('category', self.get_category(response))
         ad_loader.add_value('flat_area', self.get_total_square(response))
+        ad_loader.add_value('agent', 'i58.ru' in response.url)
         ad_loader.add_value('contact_name', self.get_contact_name(response))
         ad_loader.add_value('floor', self.get_floor(response))
         ad_loader.add_value('image_list', self.get_image_list(response))
@@ -191,6 +210,7 @@ class BazarpnzSpider(scrapy.Spider):
         """
         @url  http://bazarpnz.ru/nedvizhimost/?&sort=date&d=desc&s=4
         """
+
         self.uptodate_count = 0
         for item in response.xpath(self.item_selector):
             ad = self.get_ad_data_from_category(item, response)
@@ -198,10 +218,13 @@ class BazarpnzSpider(scrapy.Spider):
                                   meta={'ad': ad, 'dont_merge_cookies': True},
                                   headers={'Referer': None},
                                   callback=self.parse_ad)
-        if self.uptodate_count > 0:
-            url = response.xpath("//form[@name='topage']/a[./text()='следующей']/@href")\
-                .extract_first()
-            yield response.follow(url + '?', callback=self.parse)
+        #if self.uptodate_count > 0:
+        url = response.xpath("//form[@name='topage']/a[./text()='следующей']/@href")\
+            .extract_first()
+        if not url:
+            Logger.log('WARN', 'Next page url not found on the {}'.format(response.url))
+
+        yield response.follow(url + '?', callback=self.parse)
 
 
 

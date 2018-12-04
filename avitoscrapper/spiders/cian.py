@@ -19,7 +19,7 @@ class CianSpider(scrapy.Spider):
     owner_only = True
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
-        'DOWNLOAD_DELAY': 113.1
+        'DOWNLOAD_DELAY': 11.1
     }
     allowed_domains = ['cian.ru']
     base_url_format = 'https://penza.cian.ru/export/xls/offers'
@@ -131,6 +131,11 @@ class CianSpider(scrapy.Spider):
         return 'Неизвестно'
 
     # noinspection PyMethodMayBeStatic
+    def get_category_from_page(self, response):
+        raw = response.xpath('//a[contains(@class, \'a10a3f92e9--link--378yo\')]/span/text()').extract()[2]
+        return raw
+
+    # noinspection PyMethodMayBeStatic
     def get_description(self, df, i):
         for j in df.columns:
             if 'описание' in j.lower() and df[j][i]:
@@ -162,7 +167,7 @@ class CianSpider(scrapy.Spider):
             item['flat_area'] = self.get_flat_area(df, i)
             item['phone'] = self.get_phone(df, i)
             item['address'] = self.get_address(df, i)
-            item['category'] = self.get_category(df, i)
+            #item['category'] = self.get_category(df, i)
             # item['agent'] = self.get_column(df, i, 2)
             item['description'] = self.get_description(df, i)
             item['floor_count'] = self.get_floor_count(df, i)
@@ -191,6 +196,7 @@ class CianSpider(scrapy.Spider):
     def parse_additional_item(self, response):
         item = response.meta['item']
         item['placed_at'] = self.get_ad_date(response)
+        item['category'] = self.get_category_from_page(response)
         yield item
 
     def parse(self, response):

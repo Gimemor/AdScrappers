@@ -9,12 +9,14 @@ import codecs
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import requests
 
+
 class AvitoscrapperPipeline(object):
     push_url = 'http://realty.zmservice.ru/api/create_order.json'
 
     # noinspection PyMethodMayBeStatic
     def process_item(self, item, spider):
         result = dict(item)
+        print(result)
         if 'image_list' in result:
             result['image_list'] = json.dumps(result['image_list'])
         result['placed_at'] = str(result['placed_at'])

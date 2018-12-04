@@ -22,13 +22,20 @@ from ..logger import Logger
 class AvitoRuSpider(scrapy.Spider):
     name = 'avito.ru'
     allowed_domains = ['avito.ru']
-    start_urls = ['https://www.avito.ru/penza/kvartiry?view=list&user=1&s=104']
+    start_urls = [
+        'https://www.avito.ru/penza/kvartiry?view=list&user=1&s=104',
+        'https://www.avito.ru/penza/komnaty?view=list&user=1&s=104',
+        'https://www.avito.ru/penza/doma_dachi_kottedzhi?view=list&user=1&s=104',
+        'https://www.avito.ru/penza/zemelnye_uchastki?view=list&user=1&s=104',
+        'https://www.avito.ru/penza/garazhi_i_mashinomesta?view=list&user=1&s=104',
+        'https://www.avito.ru/penza/kommercheskaya_nedvizhimost?view=list&user=1&s=104'
+    ]
     item_selector = '//div[contains(@class, \'item_list\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
     outdate_treshold = 2
     custom_settings = {
         'ROBOTSTXT_OBEY': True,
-        'DOWNLOAD_DELAY': 21.1
+        'DOWNLOAD_DELAY': 1.1
     }
 
     def __init__(self):
@@ -37,6 +44,7 @@ class AvitoRuSpider(scrapy.Spider):
         self.driver_options.headless = True
         self.driver = webdriver.Chrome(executable_path='/usr/bin/chromedriver',
                                         options=self.driver_options)
+        self.total_count = 0
 
     # noinspection PyMethodMayBeStatic
     def get_date_from_description(self, raw_data):
@@ -162,14 +170,10 @@ class AvitoRuSpider(scrapy.Spider):
         return int(data)
 
     def get_category(self, response):
-        data = [x.lower() for x in
-                response.xpath("//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()]
+        data = response.xpath("//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()
         if not data:
             return self.get_room_count(repsonse)
-        for i in data:
-            if 'комнат' in i:
-                return i
-        return self.get_room_count(response)
+        return data[2]
 
     # noinspection PyMethodMayBeStatic
     def get_ad_date(self, response):
@@ -196,7 +200,15 @@ class AvitoRuSpider(scrapy.Spider):
     def get_city(self, response):
         address = self.get_address(response)
         items = address.split(',')
-        return items[0] if items else 'Пенза'
+        return items[0] if not 'р-н' in items[0] else 'Пенза'
+
+    def get_district(self, response):
+        address = self.get_address(response)
+        items = address.split(',')
+        for i in items:
+            if 'р-н' in items:
+                return i
+        return 'Неизвестно'
 
     def parse_ad(self, response):
         """
@@ -209,6 +221,7 @@ class AvitoRuSpider(scrapy.Spider):
         ad_loader.add_value('order_type', self.get_order_type(response))
         ad_loader.add_value('placed_at', self.get_ad_date(response))
         ad_loader.add_value('city', self.get_city(response))
+
         ad_loader.add_value('floor', self.get_floor(response))
         ad_loader.add_value('flat_area', self.get_total_square(response))
         # plot_size
@@ -225,15 +238,18 @@ class AvitoRuSpider(scrapy.Spider):
 
     def parse(self, response):
         last_reached = False
+
         for item in response.xpath(self.item_selector):
+            self.total_count += 1
             ad = self.get_ad_data_from_category(item)
             if ad['scrapping_eligible']:
                 yield response.follow(ad['url'], callback=self.parse_ad)
-
-        if not last_reached:
-            url = response.xpath('//a[contains(@class,\'js-pagination-next\')]/@href')\
-                .extract_first()
-            yield response.follow(url, callback=self.parse)
+        print("Total count {0}".format(self.total_count))
+        url = response.xpath('//a[contains(@class,\'js-pagination-next\')]/@href')\
+            .extract_first()
+        if not url:
+            return
+        yield response.follow(url, callback=self.parse)
 
     def closed(self, reason):
         self.driver.close()

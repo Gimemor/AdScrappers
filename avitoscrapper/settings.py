@@ -13,11 +13,20 @@ BOT_NAME = 'avitoscrapper'
 
 SPIDER_MODULES = ['avitoscrapper.spiders']
 NEWSPIDER_MODULE = 'avitoscrapper.spiders'
-
+# Retry many times since proxies often fail
+RETRY_TIMES = 10
+# Retry on most error codes since proxies fail for different reasons
+RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
+PROXY_LIST = 'ips-zone-processed.txt'
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
+    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
+    'avitoscrapper.middlewares.RandomProxy': 100,
+    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
     'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
 }
+PROXY_MODE = 0
+
 FEED_FORMAT = 'json'
 FEED_URI = 'output.json'
 FEED_EXPORT_ENCODING = 'utf-8'
@@ -72,9 +81,9 @@ DOWNLOAD_DELAY = 20.1
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'avitoscrapper.pipelines.AvitoscrapperPipeline': 300,
-#}
+ITEM_PIPELINES = {
+    'avitoscrapper.pipelines.AvitoscrapperPipeline': 222
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -98,7 +107,3 @@ AUTOTHROTTLE_DEBUG = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 FEED_EXPORT_ENCODING = 'utf-8'
-
-ITEM_PIPELINES = {
-    'avitoscrapper.pipelines.AvitoscrapperPipeline': 300,
-}

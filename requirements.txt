@@ -9,3 +9,4 @@ xlrd
 js2py
 scrapy-fake-useragent
 xvfbwrapper
+scrapy_proxies
