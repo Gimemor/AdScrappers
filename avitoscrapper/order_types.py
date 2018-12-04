@@ -18,7 +18,8 @@ RU_MONTH_VALUES = {
     'октября': 10,
     'ноября': 11,
     'декабря': 12,
-    #######
+}
+RU_SHORT_MONTH_VALUES = { 
     'янв': 1,
     'фев': 2,
     'мар': 3,
@@ -35,6 +36,9 @@ RU_MONTH_VALUES = {
 
 
 def month_format(date_str):
+    date_str = date_str.lower()
     for k, v in RU_MONTH_VALUES.items():
+        date_str = date_str.replace(k, str(v))
+    for k, v in RU_SHORT_MONTH_VALUES.items():
         date_str = date_str.replace(k, str(v))
     return date_str + ' 2018'

@@ -56,6 +56,7 @@ class AvitoRuSpider(scrapy.Spider):
             return datetime.datetime.today()
         if first == 'вчера':
             return datetime.date.today() - datetime.timedelta(1)
+        print(first)
         result = month_format(first)
         print(result)
         return datetime.datetime.strptime(result, '%d %m %Y')
@@ -212,7 +213,7 @@ class AvitoRuSpider(scrapy.Spider):
 
     def parse_ad(self, response):
         """
-        @url https://www.avito.ru/penza/kvartiry/2-k_kvartira_47.7_m_45_et._1310404007
+        @url https://www.avito.ru/penza/komnaty/komnata_11_m_v_2-k_29_et._976019279
         """
         ad_loader = ItemLoader(item=Ad(), response=response)
         ad_loader.add_xpath('title', '//span[contains(@class, \'title-info-title-text\')]/text()')
