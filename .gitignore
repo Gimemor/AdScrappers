@@ -5,3 +5,4 @@ chromedriver
 output.json
 offers.xlsx
 _oldchromedriver
+.idea
