@@ -4,7 +4,7 @@ import logging
 import traceback
 from scrapy.loader import ItemLoader
 from ..items import Ad
-from ..order_types import OrderTypes
+from ..order_types import OrderTypes, month_format
 import requests
 import os
 import time
@@ -19,19 +19,22 @@ class CianSpider(scrapy.Spider):
     owner_only = True
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
-        'DOWNLOAD_DELAY': 11.1
+        'DOWNLOAD_DELAY': 1.1
     }
     allowed_domains = ['cian.ru']
     base_url_format = 'https://penza.cian.ru/export/xls/offers'
-    referer_format = 'https://penza.cian.ru/cat.php'
+    referer_format = 'https://penza.cian.ru/'
     file = 'offers.xlsx'
     date_regex = re.compile(r"\s*(\d+\s*\w+|сегодня|вчера)", re.I)
     floor_regex = re.compile(r'(\d+)/(\d+),.*', re.I)
+    total_count = 0
 
     requests_list = [
-        '?deal_type=sale&engine_version=2&offer_type=flat&region=4923&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1&room7=1&room9=1&totime=-2',
-        '?deal_type=rent&engine_version=2&offer_type=flat&region=4923&room1=1&room2=1&room3=1&room4=1&room5=1&room6=1&room7=1&room9=1&&totime=-2',
-    ]
+        'kupit-kvartiru/',
+        'kupit-komnatu/',
+        'kupit-dom/',
+        'snyat-kvartiru/'
+   ]
 
     def start_requests(self):
         return [
@@ -42,17 +45,6 @@ class CianSpider(scrapy.Spider):
     def __init__(self):
         scrapy.Spider.__init__(self)
         self.item_selector = '//div[contains(@class, "_93444fe79c-card--2Jgih")]'
-
-    # noinspection PyMethodMayBeStatic
-    def get_column(self, df, i, j):
-        return df[df.columns[j]][i]
-
-    def get_ad_data_from_category(self, item):
-        return {
-            'url': item.xpath('.//a[contains(@class, \'c6e8ba5398-header--1_m0_\')]/@href').extract_first(),
-            'scrapping_eligible': self.check_ad_scrapping_eligible(item),
-            'date': self.get_ad_date_from_list(item)
-        }
 
     # noinspection PyMethodMayBeStatic
     def get_ad_date_from_list(self, item):
@@ -73,62 +65,40 @@ class CianSpider(scrapy.Spider):
 
 
     # noinspection PyMethodMayBeStatic
-    def get_title_column(self, df, i):
-        for j in df.columns:
-            if 'название' in j.lower() and df[j][i] != 'nan':
-                return df[j][i]
-        return None
+    def get_cost(self, response):
+        raw = response.xpath("//span[@itemprop='price']/@content").extract_first()
+        if not raw:
+            return None
+        return raw.replace('\xa0', ' ').replace(' ', '')
 
     # noinspection PyMethodMayBeStatic
-    def get_link(self, df, i):
-        for j in df.columns:
-            if 'ссылка' in j.lower() and df[j][i]:
-                return df[j][i] + '/' if df[j][i][-1] != '/' else df[j][i]
-        return None
+    def get_floor(self, response):
+        return response.xpath("//li[@class='a10a3f92e9--item--_ipjK' and span[@class='a10a3f92e9--name--3bt8k' and text() = 'Этаж']]/span[@class='a10a3f92e9--value--3Ftu5']/text()").extract_first()
+
+    def get_floor_count(self, response):
+        return response.xpath("//li[@class='a10a3f92e9--item--_ipjK' and span[@class='a10a3f92e9--name--3bt8k' and text() = 'Этажей в доме']]/span[@class='a10a3f92e9--value--3Ftu5']/text()").extract_first()
 
     # noinspection PyMethodMayBeStatic
-    def get_cost(self, df, i):
-        for j in df.columns:
-            if ('цена' in j.lower() or 'стоимость' in j.lower()) and df[j][i]:
-                return df[j][i]
-        return None
+    def get_flat_area(self, response):
+        return response.xpath("//div[@class='a10a3f92e9--info--2ywQI' and div[@class='a10a3f92e9--info-title--mSyXn' and text() = 'Общая']]/div[@class='a10a3f92e9--info-text--2uhvD']/text()").extract_first()
+
 
     # noinspection PyMethodMayBeStatic
-    def get_floor(self, df, i):
-        for j in df.columns:
-            if 'дом' in j.lower()  and df[j][i]:
-                description = df[j][i]
-                match_result = CianSpider.floor_regex.match(description)
-                return None if not match_result else match_result.groups(0)[0]
-        return None
+    def get_phone(self, response):
+        raw = response.xpath("//a[@class='a10a3f92e9--phone--3XYRR']/@href").extract_first()
+        reg = re.compile('tel:([\d\+ -]+)', re.I)
+        result = reg.findall(raw)
+        return result[0] if result else None
 
     # noinspection PyMethodMayBeStatic
-    def get_flat_area(self, df, i):
-        for j in df.columns:
-            if 'площадь' in j.lower() and df[j][i]:
-                return df[j][i]
-        return None
+    def get_address(self, response):
+        raw = response.xpath("//div[@class='a10a3f92e9--geo--18qoo']/span/@content").extract_first()
+        return raw
 
     # noinspection PyMethodMayBeStatic
-    def get_phone(self, df, i):
-        for j in df.columns:
-            if 'телефон' in j.lower() and df[j][i]:
-                return str(df[j][i])
-        return None
-
-    # noinspection PyMethodMayBeStatic
-    def get_address(self, df, i):
-        for j in df.columns:
-            if 'адрес' in j.lower() and df[j][i]:
-                return df[j][i]
-        return None
-
-    # noinspection PyMethodMayBeStatic
-    def get_category(self, df, i):
-        for j in df.columns:
-            if 'количество комнат' in j.lower() and df[j][i]:
-                return 'Комнат '+ str(df[j][i])
-        return 'Неизвестно'
+    def get_category(self, response):
+        raw = response.xpath("//div[@class='a10a3f92e9--breadcrumbs--1kChM']/span[3]/a/@title").extract_first()
+        return raw if raw else "Неизвестно"
 
     # noinspection PyMethodMayBeStatic
     def get_category_from_page(self, response):
@@ -136,45 +106,60 @@ class CianSpider(scrapy.Spider):
         return raw
 
     # noinspection PyMethodMayBeStatic
-    def get_description(self, df, i):
-        for j in df.columns:
-            if 'описание' in j.lower() and df[j][i]:
-                return 'Комнат ' + str(df[j][i])
-        return None
+    def get_description(self, response):
+        raw = response.xpath("//meta[@property='og:description']/@content").extract_first()
+        return raw
 
     # noinspection PyMethodMayBeStatic
-    def get_floor_count(self, df, i):
-        for j in df.columns:
-            if 'дом' in j.lower() and df[j][i]:
-                description = df[j][i]
-                match_result = CianSpider.floor_regex.match(description)
-                return None if not match_result else match_result.groups(0)[1]
-        return None
+    def get_order_type(self, response):
+        raw = response.xpath("//div[@class='a10a3f92e9--breadcrumbs--1kChM']/span[2]/a/@title").extract_first()
+        if 'Продажа' in raw:
+            return OrderTypes['SALE']
+        if 'Аренда' in raw:
+            return OrderTypes['RENT_OUT']
 
-    def parse_ad(self, df, response):
-        results = []
-        for i in df.index:
-            item = dict()
-            item['title'] = self.get_title_column(df, i)
-            item['source'] = 2
-            item['link'] = self.get_link(df, i)
-            item['contact_name'] = None
-            item['order_type'] = OrderTypes['RENT_OUT'] if 'rent' in response.url else OrderTypes['SALE']
-            item['placed_at'] = datetime.datetime.today()
-            item['city'] = "Пенза"
-            item['cost'] = self.get_cost(df, i)
-            item['floor'] = self.get_floor(df, i)
-            item['flat_area'] = self.get_flat_area(df, i)
-            item['phone'] = self.get_phone(df, i)
-            item['address'] = self.get_address(df, i)
-            #item['category'] = self.get_category(df, i)
-            # item['agent'] = self.get_column(df, i, 2)
-            item['description'] = self.get_description(df, i)
-            item['floor_count'] = self.get_floor_count(df, i)
-            # item['contact_name'] = self.get_column(df, i, 2)
-            # item['image_list'] = self.get_column(df, i, 2)
-            results.append(item)
-        return results
+    # noinspection PyMethodMayBeStatic
+    def get_title(self, response):
+        return response.xpath("//h1[@class='a10a3f92e9--title--2Widg']/text()").extract_first()
+
+    # noinspection PyMethodMayBeStatic
+    def get_contact_name(self, response):
+        return response.xpath("//h2[@class='a10a3f92e9--title--2Zrxn']/text()").extract_first()
+
+    # noinspection PyMethodMayBeStatic
+    def get_image_list(self, response):
+        return response.xpath("//img[@class='a10a3f92e9--photo--3ybE1']/@src").extract()
+
+    def parse_ad(self, response):
+        """
+        @url https://penza.cian.ru/sale/flat/197367444/
+        """
+        ad_loader = ItemLoader(item=Ad(), response=response)
+        ad_loader.add_value('title', self.get_title(response))
+        ad_loader.add_value('source', 2)
+        ad_loader.add_value('link', response.url)
+        # order_type
+        ad_loader.add_value('order_type', self.get_order_type(response))
+        date = self.get_ad_date(response)
+        ad_loader.add_value('placed_at', date)
+        ad_loader.add_value('city', 'Пенза')
+        ad_loader.add_value('agent', False)
+        ad_loader.add_value('cost', self.get_cost(response))
+        ad_loader.add_value('phone', self.get_phone(response))
+        ad_loader.add_value('description', self.get_description(response))
+        ad_loader.add_value('address', self.get_address(response))
+        ad_loader.add_value('category', self.get_category(response))
+        ad_loader.add_value('flat_area', self.get_flat_area(response))
+        ad_loader.add_value('contact_name', self.get_contact_name(response))
+        ad_loader.add_value('floor', self.get_floor(response))
+        ad_loader.add_value('image_list', self.get_image_list(response))
+        """
+        # plot_size
+        ad_loader.add_value('plot_size', self.get_total_square(response))
+        """
+        ad_loader.add_value('floor_count', self.get_floor_count(response))
+
+        return ad_loader.load_item()
 
     # noinspection PyMethodMayBeStatic
     def get_ad_date(self, response):
@@ -191,39 +176,20 @@ class CianSpider(scrapy.Spider):
         if 'вчера' in first:
             return datetime.datetime.today() - datetime.timedelta(1)
         result = month_format(first)
-        return datetime.strptime(result, '%d %m %Y')
-
-    def parse_additional_item(self, response):
-        item = response.meta['item']
-        item['placed_at'] = self.get_ad_date(response)
-        item['category'] = self.get_category_from_page(response)
-        yield item
+        return datetime.datetime.strptime(result, '%d %m %Y')
 
     def parse(self, response):
-        url = response.xpath(
-            '//li[contains(@class, \'_93444fe79c-list-item--2QgXB _93444fe79c-list-item--active--2-sVo\')]/following-sibling::li/a/@href') \
-            .extract_first()
-        request = CianSpider.base_url_format + '?' + response.url.split('?', 1)[1]
-        time.sleep(15)
-        xls_response = requests.get(request,
-                                    headers={
-                                        'referer': response.url
-                                     })
-        if xls_response.status_code == 200:
-            with open(CianSpider.file, 'wb') as f:
-                f.write(xls_response.content)
-        df = pandas.read_excel(CianSpider.file)
-        df = df.where((pandas.notnull(df)), None)
-        items = self.parse_ad(df, response)
-        os.remove(CianSpider.file)
+        items = response.xpath("//a[contains(@class, 'c6e8ba5398-header--1_m0_')]/@href").extract()
         for item in items:
-            yield response.follow(item['link'],
-                                  headers={
-                                      "Referer": response.url,
-                                      "Host": "penza.cian.ru"
-                                  },
-                                  meta={'item': item},
-                                  callback=self.parse_additional_item)
-
+            CianSpider.total_count += 1
+            yield response.follow(item, headers={"Referer": response.url, "Host": "penza.cian.ru"}, callback=self.parse_ad)
+        print(CianSpider.total_count)
+        subblocks = response.xpath("//a[contains(@class, 'c6e8ba5398-sub-block--21VAX c6e8ba5398-similar--3RghR')]/@href").extract()
+        for block in subblocks:
+            yield response.follow(block, callback=self.parse, meta={'dont_merge_cookies': True})
+        url = response.xpath(
+            '//li[contains(@class, \'93444fe79c-list-item--2QgXB _93444fe79c-list-item--active--2-sVo\')]/following-sibling::li/a/@href') \
+            .extract_first()
         if url:
             yield response.follow(url, callback=self.parse, meta={'dont_merge_cookies': True})
+        print('Total count ' + str(CianSpider.total_count))

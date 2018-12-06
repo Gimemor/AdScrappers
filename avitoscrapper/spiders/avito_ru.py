@@ -24,19 +24,19 @@ class AvitoRuSpider(scrapy.Spider):
     name = 'avito.ru'
     allowed_domains = ['avito.ru']
     start_urls = [
-        'https://www.avito.ru/penza/kvartiry?view=list&user=1&s=104',
-        'https://www.avito.ru/penza/komnaty?view=list&user=1&s=104',
-        'https://www.avito.ru/penza/doma_dachi_kottedzhi?view=list&user=1&s=104',
-        'https://www.avito.ru/penza/zemelnye_uchastki?view=list&user=1&s=104',
-        'https://www.avito.ru/penza/garazhi_i_mashinomesta?view=list&user=1&s=104',
-        'https://www.avito.ru/penza/kommercheskaya_nedvizhimost?view=list&user=1&s=104'
+        'https://www.avito.ru/penza/kvartiry?view=list&s=104',
+        'https://www.avito.ru/penza/komnaty?view=list&s=104',
+        'https://www.avito.ru/penza/doma_dachi_kottedzhi?view=list&&s=104',
+        'https://www.avito.ru/penza/zemelnye_uchastki?view=list&s=104',
+        'https://www.avito.ru/penza/garazhi_i_mashinomesta?view=list&s=104',
+        'https://www.avito.ru/penza/kommercheskaya_nedvizhimost?view=list&s=104'
     ]
     item_selector = '//div[contains(@class, \'item_list\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
     outdate_treshold = 2
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
-        'DOWNLOAD_DELAY': 1.1
+        'DOWNLOAD_DELAY': 0
     }
 
     def __init__(self):
@@ -240,5 +240,3 @@ class AvitoRuSpider(scrapy.Spider):
             return
         yield response.follow(url, callback=self.parse)
 
-    def closed(self, reason):
-        self.driver.close()
