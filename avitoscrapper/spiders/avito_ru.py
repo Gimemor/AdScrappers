@@ -31,7 +31,7 @@ class AvitoRuSpider(scrapy.Spider):
         'https://www.avito.ru/penza/garazhi_i_mashinomesta?view=list&s=104',
         'https://www.avito.ru/penza/kommercheskaya_nedvizhimost?view=list&s=104'
     ]
-    item_selector = '//div[contains(@class, \'item_list\')]'
+    item_selector = '//div[contains(@class, \'item_table clearfix js-catalog-item-enum\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
     outdate_treshold = 2
     custom_settings = {
@@ -63,7 +63,7 @@ class AvitoRuSpider(scrapy.Spider):
     def get_ad_data_from_category(self, item):
         return {
             'url': item.xpath('.//a[contains(@class, \'description-title-link\')]/@href').extract_first(),
-            'scrapping_eligible': self.check_ad_scrapping_eligible(item)
+            'scrapping_eligible': True
         }
 
     # noinspection PyMethodMayBeStatic
@@ -209,7 +209,7 @@ class AvitoRuSpider(scrapy.Spider):
         ad_loader.add_value('order_type', self.get_order_type(response))
         ad_loader.add_value('placed_at', self.get_ad_date(response))
         ad_loader.add_value('city', self.get_city(response))
-
+        ad_loader.add_value('agent', False)
         ad_loader.add_value('floor', self.get_floor(response))
         ad_loader.add_value('flat_area', self.get_total_square(response))
         # plot_size
@@ -226,8 +226,6 @@ class AvitoRuSpider(scrapy.Spider):
         yield response.follow(url, callback=self.parse_mobile, meta={'ad_loader': ad_loader})
 
     def parse(self, response):
-        last_reached = False
-
         for item in response.xpath(self.item_selector):
             self.total_count += 1
             ad = self.get_ad_data_from_category(item)
