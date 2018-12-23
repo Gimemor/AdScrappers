@@ -107,3 +107,7 @@ AUTOTHROTTLE_DEBUG = True
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 FEED_EXPORT_ENCODING = 'utf-8'
+
+# None for Eternal Looping
+ETERNAL_SCRAPPING = False
+SCRAPPING_DEPTH = None

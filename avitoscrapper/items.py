@@ -27,3 +27,4 @@ class Ad(scrapy.Item):
     floor_count = scrapy.Field(output_processor=TakeFirst())
     contact_name = scrapy.Field(output_processor=TakeFirst())
     image_list = scrapy.Field()
+    district = scrapy.Field(output_processor=TakeFirst())

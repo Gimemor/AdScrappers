@@ -42,7 +42,6 @@ class AvitoRuSpider(scrapy.Spider):
     def __init__(self):
         scrapy.Spider.__init__(self)
         self.driver_options = Options()
-
         self.total_count = 0
 
     # noinspection PyMethodMayBeStatic
@@ -132,7 +131,8 @@ class AvitoRuSpider(scrapy.Spider):
         if data is None:
             Logger.log('Warning', 'Contact name not found')
             return None
-        return data.extract_first().strip()
+        result = data.extract_first()
+        return result if result is not None else 'Неизвестно'
 
     # noinspection PyMethodMayBeStatic
     def get_image_list(self, response):
@@ -186,21 +186,30 @@ class AvitoRuSpider(scrapy.Spider):
         return items[0] if not 'р-н' in items[0] else 'Пенза'
 
     def get_district(self, response):
+        fallback_value = 'Неизвестно'
         address = self.get_address(response)
+        if address is None:
+            return fallback_value
         items = address.split(',')
         for i in items:
             if 'р-н' in items:
                 return i
-        return 'Неизвестно'
+        return fallback_value
+
+    # noinspection PyMethodMayBeStatic
+    def get_mobile_address(self, response):
+        raw_data = response.xpath("//span[@data-marker='delivery/location']/text()").extract_first()
+        return raw_data
 
     def parse_mobile(self, response):
         ad_loader = response.meta['ad_loader']
         ad_loader.add_value('phone', self.get_phone(response))
+        ad_loader.add_value('address', self.get_mobile_address(response))
         return ad_loader.load_item()
 
     def parse_ad(self, response):
         """
-        @url https://m.avito.ru/penza/komnaty/komnata_11_m_v_2-k_29_et._976019279
+        @url https://www.avito.ru/penza/garazhi_i_mashinomesta/garazh_24_m_930948494
         """
         ad_loader = ItemLoader(item=Ad(), response=response)
         ad_loader.add_xpath('title', '//span[contains(@class, \'title-info-title-text\')]/text()')
@@ -215,8 +224,7 @@ class AvitoRuSpider(scrapy.Spider):
         # plot_size
         # ad_loader.add_value('plot_size', self.get_total_square(response))
         ad_loader.add_value('cost', self.get_cost(response))
-
-        ad_loader.add_value('address', self.get_address(response))
+        ad_loader.add_value('district', self.get_district(response))
         ad_loader.add_value('description', self.get_description(response))
         ad_loader.add_value('category', self.get_category(response))
         ad_loader.add_value('floor_count', self.get_floor_count(response))
