@@ -22,8 +22,8 @@ from ..logger import Logger
 
 class AvitoRuSpider(scrapy.Spider):
     name = 'avito.ru'
-    scrapping_depth = 1
-    eternal_scrapping = True
+    scrapping_depth = None
+    eternal_scrapping = False
     allowed_domains = ['avito.ru']
     location_parts = ['penza']
     url_fromats = [
