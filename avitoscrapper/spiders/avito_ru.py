@@ -22,15 +22,20 @@ from ..logger import Logger
 
 class AvitoRuSpider(scrapy.Spider):
     name = 'avito.ru'
+    scrapping_depth = 1
+    eternal_scrapping = True
     allowed_domains = ['avito.ru']
-    start_urls = [
-        'https://www.avito.ru/penza/kvartiry?view=list&s=104',
-        'https://www.avito.ru/penza/komnaty?view=list&s=104',
-        'https://www.avito.ru/penza/doma_dachi_kottedzhi?view=list&&s=104',
-        'https://www.avito.ru/penza/zemelnye_uchastki?view=list&s=104',
-        'https://www.avito.ru/penza/garazhi_i_mashinomesta?view=list&s=104',
-        'https://www.avito.ru/penza/kommercheskaya_nedvizhimost?view=list&s=104'
+    location_parts = ['penza']
+    url_fromats = [
+        'https://www.avito.ru/{}/kvartiry?view=list&s=104',
+        'https://www.avito.ru/{}/komnaty?view=list&s=104',
+        'https://www.avito.ru/{}/doma_dachi_kottedzhi?view=list&&s=104',
+        'https://www.avito.ru/{}/zemelnye_uchastki?view=list&s=104',
+        'https://www.avito.ru/{}/garazhi_i_mashinomesta?view=list&s=104',
+        'https://www.avito.ru/{}/kommercheskaya_nedvizhimost?view=list&s=104'
     ]
+
+
     item_selector = '//div[contains(@class, \'item_table clearfix js-catalog-item-enum\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
     outdate_treshold = 2
@@ -43,6 +48,14 @@ class AvitoRuSpider(scrapy.Spider):
         scrapy.Spider.__init__(self)
         self.driver_options = Options()
         self.total_count = 0
+        self.current_depth = {k: 0 for k in self.location_parts}
+
+    def start_requests(self):
+        return [
+            scrapy.Request(x.format(loc))
+            for x in self.url_fromats
+            for loc in self.location_parts
+        ]
 
     # noinspection PyMethodMayBeStatic
     def get_date_from_description(self, raw_data):
@@ -99,7 +112,16 @@ class AvitoRuSpider(scrapy.Spider):
          and contains(./span/text(), \'Количество комнат\')]/text()').extract()
         if data is None:
             return None
-        return ' '.join(data).strip()
+        regexp = re.compile('\d+', re.I)
+
+        count = regexp.findall(' '.join(data).strip())
+        if not count:
+            return None
+        return '1 комната' if count[0] == '1' else \
+            '2 комнаты' if count[0] == '2' else \
+            '3 комнаты' if count[0] == '3' else \
+            '4 комнаты' if count[0] == '4' else \
+            '{} комнат'.format(count[0])
 
     # noinspection PyMethodMayBeStatic
     def get_total_square(self, response):
@@ -151,10 +173,11 @@ class AvitoRuSpider(scrapy.Spider):
         return int(data)
 
     def get_category(self, response):
-        data = response.xpath("//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()
+        data = self.get_room_count(response)
         if not data:
-            return self.get_room_count(repsonse)
-        return data[2]
+            data = response.xpath("//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()
+            return data[2]
+        return data
 
     # noinspection PyMethodMayBeStatic
     def get_ad_date(self, response):
@@ -179,11 +202,8 @@ class AvitoRuSpider(scrapy.Spider):
         return 0
 
     def get_city(self, response):
-        address = self.get_address(response)
-        if address is None:
-            return 'Пенза'
-        items = address.split(',')
-        return items[0] if not 'р-н' in items[0] else 'Пенза'
+        city = response.xpath('//meta[@itemprop="addressLocality"]/@content').extract_first()
+        return city if city else "Неизвестно"
 
     def get_district(self, response):
         fallback_value = 'Неизвестно'
@@ -244,5 +264,12 @@ class AvitoRuSpider(scrapy.Spider):
             .extract_first()
         if not url:
             return
+        self.current_depth[response.url.split('/')[3]] += 1
+        if AvitoRuSpider.scrapping_depth is not None and self.current_depth[response.url.split('/')[3]] > AvitoRuSpider.scrapping_depth:
+            if AvitoRuSpider.eternal_scrapping:
+                for x in self.start_requests():
+                    yield x
+            return
+        print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[response.url.split('/')[3]], self.scrapping_depth))
         yield response.follow(url, callback=self.parse)
 

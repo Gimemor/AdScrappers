@@ -22,7 +22,7 @@ class AvitoscrapperPipeline(object):
         result['placed_at'] = str(result['placed_at'])
         response = requests.post(AvitoscrapperPipeline.push_url,
                                  data=json.dumps({'order': result}),
-                                 headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+                                headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
         print(response.content)
         return item
 

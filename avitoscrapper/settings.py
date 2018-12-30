@@ -23,7 +23,7 @@ DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
     'avitoscrapper.middlewares.RandomProxy': 100,
     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
-    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
+#    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
 }
 PROXY_MODE = 0
 
@@ -109,5 +109,4 @@ AUTOTHROTTLE_DEBUG = True
 FEED_EXPORT_ENCODING = 'utf-8'
 
 # None for Eternal Looping
-ETERNAL_SCRAPPING = False
 SCRAPPING_DEPTH = None

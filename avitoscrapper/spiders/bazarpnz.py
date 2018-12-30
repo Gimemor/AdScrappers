@@ -117,6 +117,17 @@ class BazarpnzSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_category(self, response):
+        contact_info = response.xpath('//p[contains(@class, "contact_info")]').extract()
+        if contact_info:
+            raw = "\n".join(contact_info)
+            regexp = re.compile("Количество комнат: (.+?)<br>", re.I)
+            result = regexp.findall(raw)
+            if result is not None and len(result) > 0:
+                return result[0]
+        return self.get_category_from_breadcrumbs(response)
+
+    # noinspection PyMethodMayBeStatic
+    def get_category_from_breadcrumbs(self, response):
         category_number = '3'
         if 'i58.ru' in response.url:
             category_number = '4'

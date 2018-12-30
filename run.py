@@ -14,8 +14,8 @@ from xvfbwrapper import Xvfb
 
 scrappers = [
  AvitoRuSpider,
- #CianSpider,
- #BazarpnzSpider
+ CianSpider,
+ BazarpnzSpider
 ]
 
 #os.environ["http_proxy"] = "http://localhost:8888"

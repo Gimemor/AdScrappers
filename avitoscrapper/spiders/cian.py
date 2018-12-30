@@ -82,6 +82,21 @@ class CianSpider(scrapy.Spider):
     def get_flat_area(self, response):
         return response.xpath("//div[@class='a10a3f92e9--info--2ywQI' and div[@class='a10a3f92e9--info-title--mSyXn' and text() = 'Общая']]/div[@class='a10a3f92e9--info-text--2uhvD']/text()").extract_first()
 
+    # noinspection PyMethodMayBeStatic
+    def get_room_count(self, response):
+        raw = response.xpath(
+            '//span[contains(@class,"a10a3f92e9--value--3Ftu5") and contains(ancestor::li/child::span["a10a3f92e9--name--3bt8k"]/text(), "Количество комнат")]').extract_first()
+        if not raw:
+            return None
+        regexp = re.compile('>(\d+)<', re.I)
+        count = regexp.findall(raw)
+        if not count:
+            return None
+        return '1 комната' if count[0] == '1' else\
+            '2 комнаты' if count[0] == '2' else\
+            '3 комнаты' if count[0] == '3' else\
+            '4 комнаты' if count[0] == '4' else\
+            '{} комнат'.format(count[0])
 
     # noinspection PyMethodMayBeStatic
     def get_phone(self, response):
@@ -97,6 +112,9 @@ class CianSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_category(self, response):
+        room_count = self.get_room_count(response)
+        if room_count:
+            return room_count
         raw = response.xpath("//div[@class='a10a3f92e9--breadcrumbs--1kChM']/span[3]/a/@title").extract_first()
         return raw if raw else "Неизвестно"
 
