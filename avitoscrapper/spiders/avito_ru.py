@@ -1,31 +1,18 @@
 # -*- coding: utf-8 -*-
 import scrapy
-import logging
-import traceback
 import datetime
-import requests
 import re
+from .config import AvitoSettings
 from scrapy.loader import ItemLoader
 from ..items import Ad
 from ..order_types import OrderTypes, month_format
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from PIL import Image
-import base64
-import pytesseract
-import io
-import selenium.webdriver.support.expected_conditions as expected_condition
 from ..logger import Logger
 
 
 class AvitoRuSpider(scrapy.Spider):
     name = 'avito.ru'
-    scrapping_depth = None
-    eternal_scrapping = False
     allowed_domains = ['avito.ru']
-    location_parts = ['penza']
+
     url_fromats = [
         'https://www.avito.ru/{}/kvartiry?view=list&s=104',
         'https://www.avito.ru/{}/komnaty?view=list&s=104',
@@ -35,10 +22,8 @@ class AvitoRuSpider(scrapy.Spider):
         'https://www.avito.ru/{}/kommercheskaya_nedvizhimost?view=list&s=104'
     ]
 
-
     item_selector = '//div[contains(@class, \'item_table clearfix js-catalog-item-enum\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
-    outdate_treshold = 2
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
         'DOWNLOAD_DELAY': 0
@@ -46,15 +31,14 @@ class AvitoRuSpider(scrapy.Spider):
 
     def __init__(self):
         scrapy.Spider.__init__(self)
-        self.driver_options = Options()
         self.total_count = 0
-        self.current_depth = {k: 0 for k in self.location_parts}
+        self.current_depth = {k: 0 for k in AvitoSettings.LOCATION_PARTS}
 
     def start_requests(self):
         return [
             scrapy.Request(x.format(loc))
             for x in self.url_fromats
-            for loc in self.location_parts
+            for loc in AvitoSettings.LOCATION_PARTS
         ]
 
     # noinspection PyMethodMayBeStatic
@@ -67,22 +51,14 @@ class AvitoRuSpider(scrapy.Spider):
             return datetime.datetime.today()
         if first == 'вчера':
             return datetime.date.today() - datetime.timedelta(1)
-        print(first)
         result = month_format(first)
-        print(result)
         return datetime.datetime.strptime(result, '%d %m %Y')
 
+    # noinspection PyMethodMayBeStatic
     def get_ad_data_from_category(self, item):
         return {
             'url': item.xpath('.//a[contains(@class, \'description-title-link\')]/@href').extract_first(),
-            'scrapping_eligible': True
         }
-
-    # noinspection PyMethodMayBeStatic
-    def check_ad_scrapping_eligible(self, item):
-        raw_date = item.xpath('.//span[contains(@class, \'date\')]/text()').extract_first()
-        date = self.get_date_from_description(raw_date)
-        return (datetime.datetime.today() - date).days < AvitoRuSpider.outdate_treshold
 
     # noinspection PyMethodMayBeStatic
     def get_address(self, response):
@@ -113,15 +89,13 @@ class AvitoRuSpider(scrapy.Spider):
         if data is None:
             return None
         regexp = re.compile('\d+', re.I)
-
-        count = regexp.findall(' '.join(data).strip())
-        if not count:
+        count_raw = regexp.findall(' '.join(data).strip())
+        if not count_raw:
             return None
-        return '1 комната' if count[0] == '1' else \
-            '2 комнаты' if count[0] == '2' else \
-            '3 комнаты' if count[0] == '3' else \
-            '4 комнаты' if count[0] == '4' else \
-            '{} комнат'.format(count[0])
+        count = int(count_raw[0])
+        return '1 комната' if count == 1 else \
+               '{} комнаты'.format(count) if 1 < count < 5 else \
+               '{} комнат'.format(count)
 
     # noinspection PyMethodMayBeStatic
     def get_total_square(self, response):
@@ -186,7 +160,8 @@ class AvitoRuSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_order_type(self, response):
-        data = [x.lower() for x in response.xpath("//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()]
+        data = [x.lower() for x in response.xpath(
+            "//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()]
         if not data:
             Logger.log('Warning', 'Order type is not found')
             return 0
@@ -257,19 +232,21 @@ class AvitoRuSpider(scrapy.Spider):
         for item in response.xpath(self.item_selector):
             self.total_count += 1
             ad = self.get_ad_data_from_category(item)
-            if ad['scrapping_eligible']:
-                yield response.follow(ad['url'], callback=self.parse_ad)
+            yield response.follow(ad['url'], callback=self.parse_ad)
         print("Total count {0}".format(self.total_count))
         url = response.xpath('//a[contains(@class,\'js-pagination-next\')]/@href')\
             .extract_first()
         if not url:
             return
         self.current_depth[response.url.split('/')[3]] += 1
-        if AvitoRuSpider.scrapping_depth is not None and self.current_depth[response.url.split('/')[3]] > AvitoRuSpider.scrapping_depth:
-            if AvitoRuSpider.eternal_scrapping:
+
+        if AvitoSettings.SCRAPPING_DEPTH is not None and \
+                self.current_depth[response.url.split('/')[3]] > AvitoSettings.SCRAPPING_DEPTH:
+            if AvitoSettings.ETERNAL_SCRAPPING:
                 for x in self.start_requests():
                     yield x
             return
-        print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[response.url.split('/')[3]], self.scrapping_depth))
+        print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[response.url.split('/')[3]],
+                                                                  AvitoSettings.SCRAPPING_DEPTH))
         yield response.follow(url, callback=self.parse)
 

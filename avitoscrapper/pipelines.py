@@ -13,16 +13,36 @@ import requests
 class AvitoscrapperPipeline(object):
     push_url = 'http://realty.zmservice.ru/api/create_order.json'
 
+    category_map = {
+        # AVITO
+        "Земельные участки": "Участки",
+        "Дома, дачи, коттеджи": "Дома",
+        "Коммерческая недвижимость": "Коммерция",
+        "Гаражи и машиноместа": "Гаражи",
+        # BAZAR
+        "С общей кухней": "Комнаты",
+        "Студия": " Студии",
+        "Дачи": "Дома",
+        # CIAN
+        "Продажа квартир-студий в Пензе": "Студии",
+        "Продажа комнат в Пензе": "Комнаты",
+        "Продажа домов в Пензенской области": "Дома"
+    }
+
     # noinspection PyMethodMayBeStatic
     def process_item(self, item, spider):
         result = dict(item)
         print(result)
+        if item['category'] in AvitoscrapperPipeline.category_map:
+            item['category'] = AvitoscrapperPipeline.category_map[item['category']]
+
         if 'image_list' in result:
             result['image_list'] = json.dumps(result['image_list'])
+
         result['placed_at'] = str(result['placed_at'])
         response = requests.post(AvitoscrapperPipeline.push_url,
                                  data=json.dumps({'order': result}),
-                                headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+                                 headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
         print(response.content)
         return item
 

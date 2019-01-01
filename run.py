@@ -18,10 +18,6 @@ scrappers = [
  BazarpnzSpider
 ]
 
-#os.environ["http_proxy"] = "http://localhost:8888"
-#os.environ["http_proxy"] = "lum-customer-hl_d97be066-zone-zone1-ip-66.78.37.237:ysjouo4rfjja@zproxy.lum-superproxy.io:22225"
-
-#with Xvfb() as xvfb:
 sys.path.append(os.getcwd())
 settings = get_project_settings()
 process = CrawlerProcess(settings)
