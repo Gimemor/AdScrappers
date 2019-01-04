@@ -38,7 +38,7 @@ class AvitoRuSpider(scrapy.Spider):
 
     def start_requests(self):
         return [
-            scrapy.Request(x.format(loc))
+            scrapy.Request(x.format(loc), dont_filter=True)
             for x in self.url_fromats
             for loc in AvitoSettings.LOCATION_PARTS
         ]
