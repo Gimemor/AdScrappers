@@ -1,8 +1,8 @@
 
 class AvitoSettings:
     LOCATION_PARTS = ['moskva', 'moskovskaya_oblast']
-    SCRAPPING_DEPTH = 1
-    ETERNAL_SCRAPPING = True
+    SCRAPPING_DEPTH = 4
+    ETERNAL_SCRAPPING = False
 
 
 class BazarSettings:

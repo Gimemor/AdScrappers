@@ -16,14 +16,20 @@ class AvitoRuSpider(scrapy.Spider):
     allowed_domains = ['avito.ru']
 
     url_fromats = [
-        'https://www.avito.ru/{}/kvartiry?view=list&s=104',
-        'https://www.avito.ru/{}/komnaty?view=list&s=104',
-        'https://www.avito.ru/{}/doma_dachi_kottedzhi?view=list&&s=104',
-        'https://www.avito.ru/{}/zemelnye_uchastki?view=list&s=104',
-        'https://www.avito.ru/{}/garazhi_i_mashinomesta?view=list&s=104',
-        'https://www.avito.ru/{}/kommercheskaya_nedvizhimost?view=list&s=104'
+        'https://www.avito.ru/{}/kvartiry{}?view=list&s=104',
+        'https://www.avito.ru/{}/komnaty{}?view=list&s=104',
+        'https://www.avito.ru/{}/doma_dachi_kottedzhi{}?view=list&&s=104',
+        'https://www.avito.ru/{}/zemelnye_uchastki{}?view=list&s=104',
+        'https://www.avito.ru/{}/garazhi_i_mashinomesta{}?view=list&s=104',
+        'https://www.avito.ru/{}/kommercheskaya_nedvizhimost{}?view=list&s=104'
     ]
-
+    order_types = [
+        '',
+        '/prodam',
+        '/sdam',
+        '/kuplyu',
+        '/snimu'
+    ]
     item_selector = '//div[contains(@class, \'item_table clearfix js-catalog-item-enum\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
     custom_settings = {
@@ -34,13 +40,17 @@ class AvitoRuSpider(scrapy.Spider):
     def __init__(self):
         scrapy.Spider.__init__(self)
         self.total_count = 0
-        self.current_depth = {k: 0 for k in AvitoSettings.LOCATION_PARTS}
+        self.current_depth = {x.format(k, t).split('?')[0]: 0
+                              for x in self.url_fromats
+                              for k in AvitoSettings.LOCATION_PARTS
+                              for t in self.order_types}
 
     def start_requests(self):
         return [
-            scrapy.Request(x.format(loc), dont_filter=True)
+            scrapy.Request(x.format(loc, t), dont_filter=True, priority=-5)
             for x in self.url_fromats
             for loc in AvitoSettings.LOCATION_PARTS
+            for t in self.order_types
         ]
 
     # noinspection PyMethodMayBeStatic
@@ -167,13 +177,13 @@ class AvitoRuSpider(scrapy.Spider):
         if not data:
             Logger.log('Warning', 'Order type is not found')
             return 0
-        if 'куплю' in data:
+        if 'куплю' in data or 'продать' in data or 'покупатели' in data:
             return OrderTypes['BUY']
-        if 'продам' in data:
+        if 'продам' in data or 'купить' in data:
             return OrderTypes['SALE']
-        if 'сниму' in data:
+        if 'сниму' in data or 'сдать' in data or 'арендаторы' in data:
             return OrderTypes['RENT']
-        if 'сдам' in data:
+        if 'сдам' in data or 'снять' in data:
             return OrderTypes['RENT_OUT']
         Logger.log('Warning', 'Order type is unknown')
         return 0
@@ -240,18 +250,17 @@ class AvitoRuSpider(scrapy.Spider):
             .extract_first()
         if not url:
             return
-        self.current_depth[response.url.split('/')[3]] += 1
-
+        location = response.url.split('?')[0]
+        self.current_depth[location] += 1
         if AvitoSettings.SCRAPPING_DEPTH is not None and \
-                self.current_depth[response.url.split('/')[3]] > AvitoSettings.SCRAPPING_DEPTH:
+                self.current_depth[location] > AvitoSettings.SCRAPPING_DEPTH:
             if AvitoSettings.ETERNAL_SCRAPPING:
-                time.sleep(1)
-                r = requests.delete(RemoteServerSettings.DELETE_URL)
-                print(r.content)
+                self.current_depth[location] = 0
+
                 for x in self.start_requests():
                     yield x
             return
-        print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[response.url.split('/')[3]],
+        print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[location],
                                                                   AvitoSettings.SCRAPPING_DEPTH))
-        yield response.follow(url, callback=self.parse)
+        yield response.follow(url, callback=self.parse, dont_filter=True, priority=-2)
 
