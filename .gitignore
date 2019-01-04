@@ -1,6 +1,7 @@
 *.pyc
 __pycache__
 avitoscrapper/spiders/__pycache__
+avitoscrapper/config.py
 chromedriver
 output.json
 offers.xlsx

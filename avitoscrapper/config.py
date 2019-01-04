@@ -18,3 +18,7 @@ class RemoteServerSettings:
     PUSH_URL = 'http://{}/api/create_order.json'.format(BASE_URL)
     LOG_URL = 'http://{}/api/create_log.json'.format(BASE_URL)
     DELETE_URL = 'http://{}/api/remove_old.json'.format(BASE_URL)
+
+
+class ProxySettings:
+    PROXY_LIST = 'ips-processed.test'

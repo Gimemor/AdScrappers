@@ -8,7 +8,7 @@
 #     https://doc.scrapy.org/en/latest/topics/settings.html
 #     https://doc.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://doc.scrapy.org/en/latest/topics/spider-middleware.html
-
+from .config import ProxySettings
 BOT_NAME = 'avitoscrapper'
 
 SPIDER_MODULES = ['avitoscrapper.spiders']
@@ -17,7 +17,7 @@ NEWSPIDER_MODULE = 'avitoscrapper.spiders'
 RETRY_TIMES = 10
 # Retry on most error codes since proxies fail for different reasons
 RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
-PROXY_LIST = 'ips-zone-processed.txt'
+PROXY_LIST = ProxySettings.PROXY_LIST
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': None,
     'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
