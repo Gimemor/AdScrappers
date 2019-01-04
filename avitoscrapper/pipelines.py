@@ -8,10 +8,11 @@ import codecs
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import requests
+from .config import RemoteServerSettings
 
 
 class AvitoscrapperPipeline(object):
-    push_url = 'http://realty.zmservice.ru/api/create_order.json'
+    push_url = RemoteServerSettings.PUSH_URL
 
     category_map = {
         # AVITO

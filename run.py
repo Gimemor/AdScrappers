@@ -9,13 +9,12 @@ from avitoscrapper.spiders.avito_ru import AvitoRuSpider
 from avitoscrapper.spiders.cian import CianSpider
 from avitoscrapper.spiders.bazarpnz import BazarpnzSpider
 from avitoscrapper.logger import Logger
-from xvfbwrapper import Xvfb
-
+from avitoscrapper.config import RemoteServerSettings
 
 scrappers = [
  AvitoRuSpider,
- CianSpider,
- BazarpnzSpider
+ #CianSpider,
+ #BazarpnzSpider
 ]
 
 sys.path.append(os.getcwd())
@@ -27,5 +26,5 @@ for scrapper in scrappers:
 process.start()
 Logger.log("INFO", "Stopping the realty scrappers")
 Logger.log("INFO", "Calling for the clean")
-r = requests.delete('http://realty.zmservice.ru/api/remove_old.json')
+r = requests.delete(RemoteServerSettings.DELETE_URL)
 print(r.content)

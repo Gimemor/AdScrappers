@@ -2,7 +2,9 @@
 import scrapy
 import datetime
 import re
-from .config import AvitoSettings
+import time
+import requests
+from ..config import AvitoSettings, RemoteServerSettings
 from scrapy.loader import ItemLoader
 from ..items import Ad
 from ..order_types import OrderTypes, month_format
@@ -243,6 +245,9 @@ class AvitoRuSpider(scrapy.Spider):
         if AvitoSettings.SCRAPPING_DEPTH is not None and \
                 self.current_depth[response.url.split('/')[3]] > AvitoSettings.SCRAPPING_DEPTH:
             if AvitoSettings.ETERNAL_SCRAPPING:
+                time.sleep(1)
+                r = requests.delete(RemoteServerSettings.DELETE_URL)
+                print(r.content)
                 for x in self.start_requests():
                     yield x
             return
