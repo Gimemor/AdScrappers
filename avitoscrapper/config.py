@@ -27,4 +27,4 @@ class RemoteServerSettings:
 
 
 class ProxySettings:
-    PROXY_LIST = 'ips-zone-processed.txt'
+    PROXY_LIST = 'ips-processed.test'
