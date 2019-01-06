@@ -23,17 +23,16 @@ class AvitoRuSpider(scrapy.Spider):
     def __init__(self):
         scrapy.Spider.__init__(self)
         self.total_count = 0
-        self.current_depth = {x.format(k, t).split('?')[0]: 0
-                              for x in self.url_fromats
+        self.current_depth = {x.format(k).split('?')[0]: 0
+                              for x in AvitoSettings.URL_FORMATS
                               for k in AvitoSettings.LOCATION_PARTS
-                              for t in self.order_types}
+                              }
 
     def start_requests(self):
         return [
             scrapy.Request(x.format(loc))
             for x in AvitoSettings.URL_FORMATS
             for loc in AvitoSettings.LOCATION_PARTS
-            for t in self.order_types
         ]
 
     # noinspection PyMethodMayBeStatic
@@ -234,12 +233,12 @@ class AvitoRuSpider(scrapy.Spider):
             .extract_first()
         if not url:
             return result
-        self.current_depth[response.url.split('/')[3]] += 1
-
+        location = response.url.split('?')[0]
+        self.current_depth[location] += 1
         if AvitoSettings.SCRAPPING_DEPTH is not None and \
-                self.current_depth[response.url.split('/')[3]] > AvitoSettings.SCRAPPING_DEPTH:
+                self.current_depth[location] > AvitoSettings.SCRAPPING_DEPTH:
             return None
-        print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[response.url.split('/')[3]],
+        print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[location],
                                                                   AvitoSettings.SCRAPPING_DEPTH))
         result.append(response.follow(url, callback=self.parse))
         return result
