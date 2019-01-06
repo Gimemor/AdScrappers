@@ -2,7 +2,7 @@
 import scrapy
 import datetime
 import re
-from .config import AvitoSettings
+from ..config import AvitoSettings
 from scrapy.loader import ItemLoader
 from ..items import Ad
 from ..order_types import OrderTypes, month_format
@@ -12,15 +12,6 @@ from ..logger import Logger
 class AvitoRuSpider(scrapy.Spider):
     name = 'avito.ru'
     allowed_domains = ['avito.ru']
-
-    url_fromats = [
-        'https://www.avito.ru/{}/kvartiry?view=list&s=104',
-        'https://www.avito.ru/{}/komnaty?view=list&s=104',
-        'https://www.avito.ru/{}/doma_dachi_kottedzhi?view=list&&s=104',
-        'https://www.avito.ru/{}/zemelnye_uchastki?view=list&s=104',
-        'https://www.avito.ru/{}/garazhi_i_mashinomesta?view=list&s=104',
-        'https://www.avito.ru/{}/kommercheskaya_nedvizhimost?view=list&s=104'
-    ]
 
     item_selector = '//div[contains(@class, \'item_table clearfix js-catalog-item-enum\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
@@ -37,7 +28,7 @@ class AvitoRuSpider(scrapy.Spider):
     def start_requests(self):
         return [
             scrapy.Request(x.format(loc))
-            for x in self.url_fromats
+            for x in AvitoSettings.URL_FORMATS
             for loc in AvitoSettings.LOCATION_PARTS
         ]
 
@@ -229,24 +220,22 @@ class AvitoRuSpider(scrapy.Spider):
         yield response.follow(url, callback=self.parse_mobile, meta={'ad_loader': ad_loader})
 
     def parse(self, response):
+        result = []
         for item in response.xpath(self.item_selector):
             self.total_count += 1
             ad = self.get_ad_data_from_category(item)
-            yield response.follow(ad['url'], callback=self.parse_ad)
+            result.append(response.follow(ad['url'], callback=self.parse_ad))
         print("Total count {0}".format(self.total_count))
         url = response.xpath('//a[contains(@class,\'js-pagination-next\')]/@href')\
             .extract_first()
         if not url:
-            return
+            return result
         self.current_depth[response.url.split('/')[3]] += 1
 
         if AvitoSettings.SCRAPPING_DEPTH is not None and \
                 self.current_depth[response.url.split('/')[3]] > AvitoSettings.SCRAPPING_DEPTH:
-            if AvitoSettings.ETERNAL_SCRAPPING:
-                for x in self.start_requests():
-                    yield x
-            return
+            return None
         print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[response.url.split('/')[3]],
                                                                   AvitoSettings.SCRAPPING_DEPTH))
-        yield response.follow(url, callback=self.parse)
-
+        result.append(response.follow(url, callback=self.parse))
+        return result

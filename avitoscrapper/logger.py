@@ -2,10 +2,10 @@ import requests
 import json
 import os
 import datetime
-
+from avitoscrapper.config import RemoteServerSettings
 
 class Logger:
-    __url = 'http://realty.zmservice.ru/api/create_log'
+    __url = RemoteServerSettings.LOG_URL
 
     @staticmethod
     def log(msg_type, message):
@@ -13,5 +13,5 @@ class Logger:
             datetime.date.today(), message)}
         response = requests.post(Logger.__url,
                                  data=json.dumps({'grubber_log': result}),
-                                 headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+                                headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
 

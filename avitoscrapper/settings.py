@@ -108,5 +108,5 @@ AUTOTHROTTLE_DEBUG = True
 
 FEED_EXPORT_ENCODING = 'utf-8'
 
-# None for Eternal Looping
-SCRAPPING_DEPTH = None
+#SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
+#SCHEDULER_MEMORY_QUEUE = 'scrapy.squeue.FifoMemoryQueue'

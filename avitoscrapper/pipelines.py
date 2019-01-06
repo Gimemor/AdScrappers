@@ -8,10 +8,11 @@ import codecs
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 import requests
+from .config import RemoteServerSettings
 
 
 class AvitoscrapperPipeline(object):
-    push_url = 'http://realty.zmservice.ru/api/create_order.json'
+    push_url = RemoteServerSettings.PUSH_URL
 
     category_map = {
         # AVITO
@@ -49,12 +50,14 @@ class AvitoscrapperPipeline(object):
 
 class JsonWithEncodingPipeline(object):
     def __init__(self):
-        self.file = codecs.open('scraped_data_utf8.json', 'w', encoding='utf-8')
+        pass
 
     def process_item(self, item, spider):
+        file = codecs.open('scraped_data_utf8.json', 'w', encoding='utf-8')
         line = json.dumps(dict(item), ensure_ascii=False) + "\n"
-        self.file.write(line)
+        file.write(line)
+        file.close()
         return item
 
     def spider_closed(self, spider):
-        self.file.close()
+        pass
