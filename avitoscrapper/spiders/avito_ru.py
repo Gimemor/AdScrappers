@@ -23,13 +23,17 @@ class AvitoRuSpider(scrapy.Spider):
     def __init__(self):
         scrapy.Spider.__init__(self)
         self.total_count = 0
-        self.current_depth = {k: 0 for k in AvitoSettings.LOCATION_PARTS}
+        self.current_depth = {x.format(k, t).split('?')[0]: 0
+                              for x in self.url_fromats
+                              for k in AvitoSettings.LOCATION_PARTS
+                              for t in self.order_types}
 
     def start_requests(self):
         return [
             scrapy.Request(x.format(loc))
             for x in AvitoSettings.URL_FORMATS
             for loc in AvitoSettings.LOCATION_PARTS
+            for t in self.order_types
         ]
 
     # noinspection PyMethodMayBeStatic
@@ -156,13 +160,13 @@ class AvitoRuSpider(scrapy.Spider):
         if not data:
             Logger.log('Warning', 'Order type is not found')
             return 0
-        if 'куплю' in data:
+        if 'куплю' in data or 'продать' in data or 'покупатели' in data:
             return OrderTypes['BUY']
-        if 'продам' in data:
+        if 'продам' in data or 'купить' in data:
             return OrderTypes['SALE']
-        if 'сниму' in data:
+        if 'сниму' in data or 'сдать' in data or 'арендаторы' in data:
             return OrderTypes['RENT']
-        if 'сдам' in data:
+        if 'сдам' in data or 'снять' in data:
             return OrderTypes['RENT_OUT']
         Logger.log('Warning', 'Order type is unknown')
         return 0
