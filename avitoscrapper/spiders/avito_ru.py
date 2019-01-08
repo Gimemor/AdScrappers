@@ -224,8 +224,12 @@ class AvitoRuSpider(scrapy.Spider):
 
     def parse(self, response):
         result = []
+        scrapped_ads = 0
         for item in response.xpath(self.item_selector):
             self.total_count += 1
+            scrapped_ads += 1
+            if AvitoSettings.AD_DEPTH is not None and scrapped_ads >= AvitoSettings.AD_DEPTH:
+                break
             ad = self.get_ad_data_from_category(item)
             result.append(response.follow(ad['url'], callback=self.parse_ad))
         print("Total count {0}".format(self.total_count))

@@ -1,6 +1,7 @@
 class AvitoSettings:
-    LOCATION_PARTS = ['moskva', 'moskovskaya_oblast']
+    LOCATION_PARTS = ['moskva']
     SCRAPPING_DEPTH = 1
+    AD_DEPTH = 16
     ETERNAL_SCRAPPING = True
     URL_FORMATS = [
         'https://www.avito.ru/{}/kvartiry/sdam?view=list&s=104',
@@ -27,4 +28,4 @@ class RemoteServerSettings:
 
 
 class ProxySettings:
-    PROXY_LIST = 'ips-processed.test'
+    PROXY_LIST = 'ips-zone-processed.txt'
