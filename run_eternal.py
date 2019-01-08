@@ -51,5 +51,4 @@ Logger.log("INFO", "Starting the realty scrappers.")
 while True:
     run_spider()
     print('test')
-    time.sleep(10)
 

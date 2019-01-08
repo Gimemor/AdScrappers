@@ -15,6 +15,7 @@ class AvitoRuSpider(scrapy.Spider):
 
     item_selector = '//div[contains(@class, \'item_table clearfix js-catalog-item-enum\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
+    time_regex = re.compile(r"\d\d:\d\d")
     custom_settings = {
         'ROBOTSTXT_OBEY': False,
         'DOWNLOAD_DELAY': 0
@@ -47,6 +48,14 @@ class AvitoRuSpider(scrapy.Spider):
             return datetime.date.today() - datetime.timedelta(1)
         result = month_format(first)
         return datetime.datetime.strptime(result, '%d %m %Y')
+
+    # noinspection PyMethodMayBeStatic
+    def get_time_from_description(self, raw_data):
+        time = AvitoRuSpider.time_regex.findall(raw_data)
+        if not time:
+            return datetime.timedelta(0, 0)
+        t = time[0].lower().split(':')
+        return datetime.timedelta(hours=int(t[0]), minutes=int(t[1]))
 
     # noinspection PyMethodMayBeStatic
     def get_ad_data_from_category(self, item):
@@ -150,7 +159,9 @@ class AvitoRuSpider(scrapy.Spider):
     # noinspection PyMethodMayBeStatic
     def get_ad_date(self, response):
         raw_data = response.xpath("//div[contains(@class, 'title-info-metadata-item')]/text()").extract_first()
-        return  self.get_date_from_description(raw_data)
+        dt = self.get_date_from_description(raw_data)
+        time = self.get_time_from_description(raw_data)
+        return datetime.datetime(dt.year, dt.month, dt.day) + time
 
     # noinspection PyMethodMayBeStatic
     def get_order_type(self, response):
