@@ -242,6 +242,11 @@ class AvitoRuSpider(scrapy.Spider):
             if AvitoSettings.AD_DEPTH is not None and scrapped_ads >= AvitoSettings.AD_DEPTH:
                 break
             ad = self.get_ad_data_from_category(item)
+            location_reg = re.compile('/([a-zA-Z_]+)/.*', re.I)
+            location = location_reg.findall(ad['url'])
+
+            if not location[0] in AvitoSettings.LOCATION_PARTS:
+                continue
             result.append(response.follow(ad['url'], callback=self.parse_ad))
         print("Total count {0}".format(self.total_count))
         url = response.xpath('//a[contains(@class,\'js-pagination-next\')]/@href')\
