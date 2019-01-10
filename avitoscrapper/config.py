@@ -5,10 +5,6 @@ class AvitoSettings:
     ETERNAL_SCRAPPING = True
     URL_FORMATS = [
         'https://www.avito.ru/{}/kvartiry/sdam?view=list&s=104',
-        'https://www.avito.ru/{}/komnaty/sdam?view=list&s=104',
-
-        'https://www.avito.ru/{}/kvartiry/snimu?view=list&s=104',
-        'https://www.avito.ru/{}/komnaty/snimu?view=list&s=104',
     ]
 
 
