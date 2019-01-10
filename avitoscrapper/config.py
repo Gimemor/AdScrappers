@@ -4,7 +4,7 @@ class AvitoSettings:
     AD_DEPTH = 16
     ETERNAL_SCRAPPING = True
     URL_FORMATS = [
-        'https://www.avito.ru/{}/kvartiry/sdam?view=list&s=104',
+        'https://www.avito.ru/{}/kvartiry/sdam/na_dlitelnyy_srok?view=list&s=104',
     ]
 
 
