@@ -30,6 +30,23 @@ class AvitoscrapperPipeline(object):
         "Продажа домов в Пензенской области": "Дома"
     }
 
+    street_map = {
+
+    }
+
+    def __init__(self):
+        if RemoteServerSettings.GET_DISTRICT:
+            self.street_map = AvitoscrapperPipeline.get_street_map()
+
+    @staticmethod
+    def get_street_map():
+        url = RemoteServerSettings.GET_STREET_URL
+        response = requests.get(url).text
+        print(response)
+        objs = json.loads(response)
+        map = dict((x['name'], x['district_id']) for x in objs)
+        return map
+
     # noinspection PyMethodMayBeStatic
     def process_item(self, item, spider):
         result = dict(item)
@@ -41,11 +58,37 @@ class AvitoscrapperPipeline(object):
             result['image_list'] = json.dumps(result['image_list'])
 
         result['placed_at'] = str(result['placed_at'])
+
+        if self.street_map is not None:
+            self.get_district(result)
+            print(result['district_id'])
         response = requests.post(AvitoscrapperPipeline.push_url,
                                  data=json.dumps({'order': result}),
                                  headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
         print(response.content)
         return item
+
+    @staticmethod
+    def normalize_string(s):
+        if s is None:
+            return None
+        return s.lower().replace('ё', 'е')
+
+    def get_district(self, item):
+        title = AvitoscrapperPipeline.normalize_string(item['title'] if 'title' in item else None)
+        address = AvitoscrapperPipeline.normalize_string(item['address'] if 'address' in item else None)
+        if title:
+            for key in self.street_map:
+                if key in title:
+                    item['district_id'] = self.street_map[key]
+                    return
+
+        if address:
+            for key in self.street_map:
+                if key in address:
+                    item['district_id'] = self.street_map[key]
+                    return
+        return
 
 
 class JsonWithEncodingPipeline(object):
