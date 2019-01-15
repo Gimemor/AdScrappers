@@ -37,6 +37,8 @@ class AvitoscrapperPipeline(object):
     def __init__(self):
         if RemoteServerSettings.GET_DISTRICT:
             self.street_map = AvitoscrapperPipeline.get_street_map()
+        else:
+            self.street_map = None
 
     @staticmethod
     def get_street_map():

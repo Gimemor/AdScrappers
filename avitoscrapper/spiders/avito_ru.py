@@ -244,6 +244,11 @@ class AvitoRuSpider(scrapy.Spider):
             scrapped_ads += 1
             if AvitoSettings.AD_DEPTH is not None and scrapped_ads >= AvitoSettings.AD_DEPTH:
                 break
+            if AvitoSettings.RANGE_LEFT is not None and scrapped_ads < AvitoSettings.RANGE_LEFT:
+                continue
+            if AvitoSettings.RANGE_RIGHT is not None and scrapped_ads >= AvitoSettings.RANGE_RIGHT:
+                break
+
             ad = self.get_ad_data_from_category(item)
             location_reg = re.compile('/([a-zA-Z_]+)/.*', re.I)
             location = location_reg.findall(ad['url'])
@@ -259,8 +264,8 @@ class AvitoRuSpider(scrapy.Spider):
         location = response.url.split('?')[0]
         self.current_depth[location] += 1
         if AvitoSettings.SCRAPPING_DEPTH is not None and \
-                self.current_depth[location] > AvitoSettings.SCRAPPING_DEPTH:
-            return None
+                self.current_depth[location] >= AvitoSettings.SCRAPPING_DEPTH:
+            return result
         print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[location],
                                                                   AvitoSettings.SCRAPPING_DEPTH))
         result.append(response.follow(url, callback=self.parse))
