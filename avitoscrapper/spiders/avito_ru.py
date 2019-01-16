@@ -205,7 +205,7 @@ class AvitoRuSpider(scrapy.Spider):
         ad_loader = response.meta['ad_loader']
         ad_loader.add_value('phone', self.get_phone(response))
         ad_loader.add_value('address', self.get_mobile_address(response))
-        if 'Посредник' in response.xpath('//div[@class="_1qEI9"]//div[@class = "_1Jm7J"]/text()').extract():
+        if AvitoSettings.EXCLUDE_AGENCY and 'Посредник' in response.xpath('//div[@class="_1qEI9"]//div[@class = "_1Jm7J"]/text()').extract():
             print('=' * 5 + 'Посредник')
             return None
         return ad_loader.load_item()
