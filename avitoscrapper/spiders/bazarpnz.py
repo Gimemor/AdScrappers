@@ -234,7 +234,7 @@ class BazarpnzSpider(scrapy.Spider):
             .extract_first()
         if not url:
             Logger.log('WARN', 'Next page url not found on the {}'.format(response.url))
-
+            return None
         yield response.follow(url + '?', callback=self.parse)
 
 
