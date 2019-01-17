@@ -75,9 +75,10 @@ DOWNLOAD_DELAY = 20.1
 
 # Enable or disable extensions
 # See https://doc.scrapy.org/en/latest/topics/extensions.html
-#EXTENSIONS = {
-#    'scrapy.extensions.telnet.TelnetConsole': None,
-#}
+EXTENSIONS = {
+    'scrapy.extensions.telnet.TelnetConsole': None,
+    'avitoscrapper.stats_collector.PersistStats': 222
+}
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
@@ -110,3 +111,5 @@ FEED_EXPORT_ENCODING = 'utf-8'
 
 #SCHEDULER_DISK_QUEUE = 'scrapy.squeues.PickleFifoDiskQueue'
 #SCHEDULER_MEMORY_QUEUE = 'scrapy.squeue.FifoMemoryQueue'
+
+PERSIST_STATS_INTERVAL = 40

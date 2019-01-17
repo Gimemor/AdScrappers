@@ -13,8 +13,8 @@ from avitoscrapper.config import RemoteServerSettings
 
 scrappers = [
  AvitoRuSpider,
- #CianSpider,
- #BazarpnzSpider
+ CianSpider,
+ BazarpnzSpider
 ]
 
 sys.path.append(os.getcwd())

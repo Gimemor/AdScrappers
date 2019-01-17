@@ -43,7 +43,7 @@ class RemoteServerSettings:
     LOG_URL = 'http://{}/api/create_log.json'.format(BASE_URL)
     DELETE_URL = 'http://{}/api/remove_old.json'.format(BASE_URL)
     GET_STREET_URL = 'http://{}/api/get_streets'.format(BASE_URL)
-    GET_DISTRICT = False
+    GET_DISTRICT = True
 
 class ProxySettings:
     PROXY_LIST = 'ips-zone-processed.txt'

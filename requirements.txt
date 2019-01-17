@@ -9,3 +9,4 @@ scrapy-fake-useragent
 scrapy_proxies
 certifi
 python-daemon
+twisted

@@ -63,7 +63,8 @@ class AvitoscrapperPipeline(object):
 
         if self.street_map is not None:
             self.get_district(result)
-            print(result['district_id'])
+            if 'district_id' in result:
+                print(result['district_id'])
         response = requests.post(AvitoscrapperPipeline.push_url,
                                  data=json.dumps({'order': result}),
                                  headers={'Accept': 'application/json', 'Content-Type': 'application/json'})

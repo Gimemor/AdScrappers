@@ -205,7 +205,10 @@ class AvitoRuSpider(scrapy.Spider):
         ad_loader = response.meta['ad_loader']
         ad_loader.add_value('phone', self.get_phone(response))
         ad_loader.add_value('address', self.get_mobile_address(response))
-        if AvitoSettings.EXCLUDE_AGENCY and 'Посредник' in response.xpath('//div[@class="_1qEI9"]//div[@class = "_1Jm7J"]/text()').extract():
+        is_agent = 'Посредник' in response.xpath('//div[@class="_1qEI9"]//div[@class = "_1Jm7J"]/text()').extract()
+        ad_loader.add_value('agent', is_agent)
+
+        if AvitoSettings.EXCLUDE_AGENCY and is_agent:
             print('=' * 5 + 'Посредник')
             return None
         return ad_loader.load_item()
@@ -221,7 +224,6 @@ class AvitoRuSpider(scrapy.Spider):
         ad_loader.add_value('order_type', self.get_order_type(response))
         ad_loader.add_value('placed_at', self.get_ad_date(response))
         ad_loader.add_value('city', self.get_city(response))
-        ad_loader.add_value('agent', False)
         ad_loader.add_value('floor', self.get_floor(response))
         ad_loader.add_value('flat_area', self.get_total_square(response))
         # plot_size
