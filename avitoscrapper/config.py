@@ -1,5 +1,5 @@
 class AvitoSettings:
-
+    """
     LOCATION_PARTS = ['penza']
     SCRAPPING_DEPTH = None
     AD_DEPTH = None
@@ -15,18 +15,20 @@ class AvitoSettings:
         'https://www.avito.ru/{}/garazhi_i_mashinomesta?view=list&s=104',
         'https://www.avito.ru/{}/kommercheskaya_nedvizhimost?view=list&s=104',
     ]
+"""
 
-    """
     LOCATION_PARTS = ['moskva']
     SCRAPPING_DEPTH = 1
     AD_DEPTH = 16
     RANGE_LEFT = 0
-    RANGE_RIGHT = 4
+    RANGE_RIGHT = 16
+    ITERATION_LIMIT = 10000
     ETERNAL_SCRAPPING = True
+    EXCLUDE_AGENCY = True
     URL_FORMATS = [
         'https://www.avito.ru/{}/kvartiry/sdam/na_dlitelnyy_srok?view=list&s=104',
     ]
-    """
+
 
 
 class BazarSettings:
@@ -38,13 +40,13 @@ class CianSettings:
 
 
 class RemoteServerSettings:
-    BASE_URL = 'realty.zmservice.ru'
+    BASE_URL = 'moscow.zmservice.ru'
     PUSH_URL = 'http://{}/api/create_order.json'.format(BASE_URL)
     LOG_URL = 'http://{}/api/create_log.json'.format(BASE_URL)
     DELETE_URL = 'http://{}/api/remove_old.json'.format(BASE_URL)
     GET_STREET_URL = 'http://{}/api/get_streets'.format(BASE_URL)
-    GET_DISTRICT = True
+    GET_DISTRICT = False
 
 class ProxySettings:
-    PROXY_LIST = 'ips-zone-processed.txt'
-    #PROXY_LIST = '../ips-processed.test'
+    #PROXY_LIST = 'ips-zone-processed.txt'
+    PROXY_LIST = '../ips-processed.test'

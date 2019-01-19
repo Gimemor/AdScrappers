@@ -31,7 +31,7 @@ class AvitoRuSpider(scrapy.Spider):
 
     def start_requests(self):
         return [
-            scrapy.Request(x.format(loc))
+            scrapy.Request(x.format(loc), dont_filter=True)
             for x in AvitoSettings.URL_FORMATS
             for loc in AvitoSettings.LOCATION_PARTS
         ]
@@ -267,6 +267,8 @@ class AvitoRuSpider(scrapy.Spider):
         self.current_depth[location] += 1
         if AvitoSettings.SCRAPPING_DEPTH is not None and \
                 self.current_depth[location] >= AvitoSettings.SCRAPPING_DEPTH:
+            if AvitoSettings.ETERNAL_SCRAPPING and self.total_count < AvitoSettings.ITERATION_LIMIT:
+                result += self.start_requests()
             return result
         print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[location],
                                                                   AvitoSettings.SCRAPPING_DEPTH))
