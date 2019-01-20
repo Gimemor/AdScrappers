@@ -10,3 +10,4 @@ scrapy_proxies
 certifi
 python-daemon
 twisted
+asyncio
