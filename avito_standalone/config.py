@@ -9,7 +9,7 @@ class AvitoSettings:
     ETERNAL_SCRAPPING = True
     EXCLUDE_AGENCY = True
     URL_FORMATS = [
-        'https://www.avito.ru/{}/kvartiry/sdam/na_dlitelnyy_srok?view=list&s=104',
+        'https://www.avito.ru/{}/kvartiry?s=104&sort=date',
     ]
     BASE_MOBILE = 'https://m.avito.ru'
 

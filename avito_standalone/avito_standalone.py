@@ -15,10 +15,12 @@ class AvitoStandalone:
     date_regex = re.compile(r"(?:размещено\s*)?(\d+\s*\w+|сегодня|вчера)", re.I)
     time_regex = re.compile(r"\d\d:\d\d")
 
+
     def __init__(self):
         self.proxy_manager = ProxyManager(ProxySettings)
         self.web_client = WebClient(self.proxy_manager)
         self.is_running = True
+        self.duplicates = {}
 
     @staticmethod
     def get_start_urls():
@@ -55,8 +57,9 @@ class AvitoStandalone:
 
     # noinspection PyMethodMayBeStatic
     def get_ad_data_from_category(self, item):
+        link = item.xpath('.//a[contains(@class, \'description-title-link\')]/@href')[0]
         return {
-            'link': AvitoSettings.BASE_MOBILE + item.xpath('.//a[contains(@class, \'description-title-link\')]/@href')[0],
+            'link': AvitoSettings.BASE_MOBILE + link,
             'placed_at': self.get_ad_date_from_category(item)
         }
 
@@ -139,8 +142,8 @@ class AvitoStandalone:
         items = address.split(',')
         return items[0] if items else "Неизвестно"
 
-    async def process_ad(self, ad):
-        page = await self.web_client.get(ad['link'])
+    async def process_ad(self, ad, session):
+        page = await self.web_client.get(ad['link'], session)
         if page is None:
             return
         dom = html.fromstring(page)
@@ -163,19 +166,24 @@ class AvitoStandalone:
         await self.web_client.post_ad(RemoteServerSettings.PUSH_URL, ad)
 
     async def process_page(self, url):
-        page = await self.web_client.get(url)
+        session = self.web_client.get_session()
+        page = await self.web_client.get(url, session)
         if page is None:
+            self.web_client.close_session(session)
             return
         tree = html.fromstring(page)
         loop = asyncio.get_running_loop()
         tasks = []
         for item in tree.xpath('//div[contains(@class, "item_table clearfix js-catalog-item-enum")]'):
             ad = self.get_ad_data_from_category(item)
-            if ad['placed_at'] >= datetime.datetime.now() - datetime.timedelta(minutes=15):
-                tasks.append(loop.create_task(self.process_ad(ad)))
+            if ad['placed_at'] >= datetime.datetime.now() - datetime.timedelta(minutes=15) \
+                    and not ad['link'] in self.duplicates:
+                self.duplicates[ad['link']] = True
+                tasks.append(loop.create_task(self.process_ad(ad, session)))
 
         if(len(tasks) > 0):
             await asyncio.wait(tasks)
+        self.web_client.close_session(session)
 
     # noinspection PyMethodMayBeStatic
     async def process_pages(self):
@@ -185,6 +193,7 @@ class AvitoStandalone:
             for url in AvitoStandalone.get_start_urls():
                 tasks.append(loop.create_task(self.process_page(url)))
             await asyncio.wait(tasks)
+            await asyncio.sleep(40)
 
     def execute(self):
         Logger.info('Starting the scrapper...')

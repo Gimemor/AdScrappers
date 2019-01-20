@@ -11,3 +11,4 @@ certifi
 python-daemon
 twisted
 asyncio
+fake-useragent

@@ -2,15 +2,20 @@ import asyncio
 import requests
 import sys
 import json
+from fake_useragent import UserAgent
 from logger import Logger
 
 
 class WebClient:
     def __init__(self, proxy_manager):
         self.proxy_manager = proxy_manager
+        self.ua = UserAgent()
 
-    def __get_internal(self, url, **kwargs):
-        return asyncio.get_running_loop().run_in_executor(None, lambda: requests.get(url, proxies=kwargs['proxies']))
+    def __get_internal(self, url, session, proxy):
+        headers={
+            'User-Agent':  session['UA']
+        }
+        return asyncio.get_running_loop().run_in_executor(None, lambda: session['SESSION'].get(url, headers=headers, proxies=proxy))
 
     def __post_internal(self, url, ad):
         def task():
@@ -20,12 +25,21 @@ class WebClient:
             return response
         return asyncio.get_running_loop().run_in_executor(None, task)
 
+    def get_session(self):
+        session = {}
+        session['UA'] = self.ua.random
+        session['SESSION'] = requests.Session()
+        return session
 
-    async def get(self, url):
+    def close_session(self, session):
+        session['SESSION'].close()
+
+    async def get(self, url, session):
         # get proxy
         proxy = self.proxy_manager.get_random_proxy()
+        Logger.info('Using proxy {}'.format(proxy))
         # try to get a page
-        response = await self.__get_internal(url, proxies=proxy)
+        response = await self.__get_internal(url, session, proxy)
         # if response is not valid
         if not response.ok:
             # switch proxy
