@@ -214,7 +214,9 @@ class RandomProxy(object):
 
     def process_exception(self, request, exception, spider):
         if 'proxy' not in request.meta:
+            print('Proxy not specified')
             return
+        print('proxy is failed')
         if self.mode == Mode.RANDOMIZE_PROXY_EVERY_REQUESTS or self.mode == Mode.RANDOMIZE_PROXY_ONCE:
             proxy = request.meta['proxy']
             try:

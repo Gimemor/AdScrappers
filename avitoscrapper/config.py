@@ -17,16 +17,16 @@ class AvitoSettings:
     ]
 """
 
-    LOCATION_PARTS = ['moskva']
+    LOCATION_PARTS = [ 'moscow' ]
     SCRAPPING_DEPTH = 1
     AD_DEPTH = 16
     RANGE_LEFT = 0
-    RANGE_RIGHT = 16
-    ITERATION_LIMIT = 10000
+    RANGE_RIGHT = 6
+    ITERATION_LIMIT = None
     ETERNAL_SCRAPPING = True
-    EXCLUDE_AGENCY = True
+    EXCLUDE_AGENCY = False
     URL_FORMATS = [
-        'https://www.avito.ru/{}/kvartiry/sdam/na_dlitelnyy_srok?view=list&s=104',
+        'https://www.avito.ru/{}/kvartiry?view=list&s=104',
     ]
 
 

@@ -19,11 +19,11 @@ RETRY_TIMES = 10
 RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
 PROXY_LIST = ProxySettings.PROXY_LIST
 DOWNLOADER_MIDDLEWARES = {
-    #'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 1,
-    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
-    'avitoscrapper.middlewares.RandomProxy': 100,
-    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
-    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
+    'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 1,
+#    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
+    'avitoscrapper.middlewares.RandomProxy': 1000,
+#    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
+#    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
 }
 PROXY_MODE = 0
 

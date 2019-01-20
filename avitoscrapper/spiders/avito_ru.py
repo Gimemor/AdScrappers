@@ -245,18 +245,19 @@ class AvitoRuSpider(scrapy.Spider):
             self.total_count += 1
             scrapped_ads += 1
             if AvitoSettings.AD_DEPTH is not None and scrapped_ads >= AvitoSettings.AD_DEPTH:
+                #print('ded')
                 break
             if AvitoSettings.RANGE_LEFT is not None and scrapped_ads < AvitoSettings.RANGE_LEFT:
+                #print('tex')
                 continue
             if AvitoSettings.RANGE_RIGHT is not None and scrapped_ads >= AvitoSettings.RANGE_RIGHT:
+                #print('loc')
                 break
 
             ad = self.get_ad_data_from_category(item)
             location_reg = re.compile('/([a-zA-Z_]+)/.*', re.I)
-            location = location_reg.findall(ad['url'])
-
-            if not location[0] in AvitoSettings.LOCATION_PARTS:
-                continue
+            #if not location[0] in AvitoSettings.LOCATION_PARTS:
+            #    continue
             result.append(response.follow(ad['url'], callback=self.parse_ad))
         print("Total count {0}".format(self.total_count))
         url = response.xpath('//a[contains(@class,\'js-pagination-next\')]/@href')\
@@ -267,7 +268,7 @@ class AvitoRuSpider(scrapy.Spider):
         self.current_depth[location] += 1
         if AvitoSettings.SCRAPPING_DEPTH is not None and \
                 self.current_depth[location] >= AvitoSettings.SCRAPPING_DEPTH:
-            if AvitoSettings.ETERNAL_SCRAPPING and self.total_count < AvitoSettings.ITERATION_LIMIT:
+            if AvitoSettings.ETERNAL_SCRAPPING and (AvitoSettings.ETERNAL_SCRAPPING is None and self.total_count < AvitoSettings.ITERATION_LIMIT):
                 result += self.start_requests()
             return result
         print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[location],
