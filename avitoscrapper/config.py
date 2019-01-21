@@ -17,16 +17,16 @@ class AvitoSettings:
     ]
 """
 
-    LOCATION_PARTS = [ 'moscow' ]
+    LOCATION_PARTS = ['moskva' ]
     SCRAPPING_DEPTH = 1
-    AD_DEPTH = 16
-    RANGE_LEFT = 0
-    RANGE_RIGHT = 6
+    AD_DEPTH = None
+    RANGE_LEFT = None
+    RANGE_RIGHT = None
     ITERATION_LIMIT = None
     ETERNAL_SCRAPPING = True
     EXCLUDE_AGENCY = False
     URL_FORMATS = [
-        'https://www.avito.ru/{}/kvartiry?view=list&s=104',
+        'https://www.avito.ru/{}/kvartiry?s=104&sort=date',
     ]
 
 
@@ -49,4 +49,4 @@ class RemoteServerSettings:
 
 class ProxySettings:
     #PROXY_LIST = 'ips-zone-processed.txt'
-    PROXY_LIST = 'ips-processed.test'
+    PROXY_LIST = '../ips-processed.test'

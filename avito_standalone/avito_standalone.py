@@ -13,7 +13,7 @@ from logger import Logger
 # Init proxy manager
 class AvitoStandalone:
     date_regex = re.compile(r"(?:размещено\s*)?(\d+\s*\w+|сегодня|вчера)", re.I)
-    time_regex = re.compile(r"\d\d:\d\d")
+    time_regex = re.compile(r"\d{1,2}:\d{1,2}")
 
 
     def __init__(self):
@@ -57,15 +57,15 @@ class AvitoStandalone:
 
     # noinspection PyMethodMayBeStatic
     def get_ad_data_from_category(self, item):
-        link = item.xpath('.//a[contains(@class, \'description-title-link\')]/@href')[0]
+        link = item.xpath('.//a[contains(@class, \'MBUbs eXo1j e-2RA\')]/@href')[0]
         return {
             'link': AvitoSettings.BASE_MOBILE + link,
-            'placed_at': self.get_ad_date_from_category(item)
+            'placed_at': self.get_ad_date_from_category(item) + datetime.timedelta(hours=3)
         }
 
 
     def get_ad_date_from_category(self, item):
-        response = item.xpath('.//div[contains(@class, \'js-item-date c-2\')]/@data-absolute-date')
+        response = item.xpath('.//div[contains(@class, \'_2owEx _2cW1K\')]/text()')
         if not response:
             return None
         return self.get_ad_date_inner(response[0])
@@ -149,8 +149,7 @@ class AvitoStandalone:
         dom = html.fromstring(page)
         # TODO: add filtering
         ad['city'] = self.get_city(dom)
-        if ad['city'].lower() != 'москва':
-            return
+
         ad['source'] = 1
         ad['order_type'] = 1
         ad['title'] = self.get_title(dom)
@@ -174,7 +173,7 @@ class AvitoStandalone:
         tree = html.fromstring(page)
         loop = asyncio.get_running_loop()
         tasks = []
-        for item in tree.xpath('//div[contains(@class, "item_table clearfix js-catalog-item-enum")]'):
+        for item in tree.xpath('//div[contains(@class, "_328WR _2PXTe")]'):
             ad = self.get_ad_data_from_category(item)
             if ad['placed_at'] >= datetime.datetime.now() - datetime.timedelta(minutes=15) \
                     and not ad['link'] in self.duplicates:
@@ -193,7 +192,7 @@ class AvitoStandalone:
             for url in AvitoStandalone.get_start_urls():
                 tasks.append(loop.create_task(self.process_page(url)))
             await asyncio.wait(tasks)
-            await asyncio.sleep(40)
+            await asyncio.sleep(61)
 
     def execute(self):
         Logger.info('Starting the scrapper...')

@@ -60,4 +60,4 @@ class WebClient:
         if not response.ok:
             Logger.info('Push {} failed, resulted with {}] {}'.format(url, response.status_code, response.text))
         else:
-            Logger.info('{} has been pushed'.format(url))
+            Logger.info('{} has been pushed'.format(ad['link']))
