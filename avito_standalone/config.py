@@ -1,6 +1,6 @@
 
 class AvitoSettings:
-    LOCATION_PARTS = ['rossiya']
+    LOCATION_PARTS = ['moskva']
     SCRAPPING_DEPTH = 1
     AD_DEPTH = 16
     RANGE_LEFT = 0
