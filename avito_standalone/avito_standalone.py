@@ -32,12 +32,12 @@ class AvitoStandalone:
     def get_date_from_description(self, raw_data):
         date = self.date_regex.findall(raw_data)
         if not date:
-            return datetime.datetime.today()
+            return datetime.datetime.utcnow()
         first = date[0].lower()
         if first == 'сегодня':
-            return datetime.datetime.today()
+            return datetime.datetime.utcnow()
         if first == 'вчера':
-            return datetime.date.today() - datetime.timedelta(1)
+            return datetime.date.utcnow() - datetime.timedelta(days=1)
         result = month_format(first)
         return datetime.datetime.strptime(result, '%d %m %Y')
 
@@ -181,7 +181,7 @@ class AvitoStandalone:
                 self.duplicates[ad['link']] = True
                 tasks.append(loop.create_task(self.process_ad(ad, session)))
 
-        if(len(tasks) > 0):
+        if len(tasks) > 0:
             await asyncio.wait(tasks)
         self.web_client.close_session(session)
 
