@@ -87,7 +87,7 @@ class AvitoStandalone:
 
     def is_agent(self, response):
         result = response.xpath('//div[@class="_1qEI9"]//div[@class = "_1Jm7J"]/text()')
-        return 'Посредник' in result[0] if result else None
+        return 'Посредник' in result if result else None
 
     def get_title(self, response):
         result = response.xpath("//h1[@data-marker='item-description/title']//span[@class='CdyRB _3SYIM _2jvRd']/text()")
@@ -162,7 +162,8 @@ class AvitoStandalone:
         ad['category'] = self.get_category(dom)
         Logger.info('Ad {} collected'.format(ad['link']))
         Logger.debug('Ad Values' + str(ad))
-        await self.web_client.post_ad(RemoteServerSettings.PUSH_URL, ad)
+        if not ad['agent']:
+            await self.web_client.post_ad(RemoteServerSettings.PUSH_URL, ad)
 
     async def process_page(self, url):
         session = self.web_client.get_session()
