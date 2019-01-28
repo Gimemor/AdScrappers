@@ -3,6 +3,7 @@ import sys
 import asyncio
 import re
 import datetime
+import time
 from lxml import html
 from config import AvitoSettings, ProxySettings, RemoteServerSettings
 from proxy_manager import ProxyManager
@@ -146,6 +147,8 @@ class AvitoStandalone:
         page = await self.web_client.get(ad['link'], session)
         if page is None:
             return
+        Logger.info('Parsing is starting: {}'.format(ad['link']))
+        start  = time.time()
         dom = html.fromstring(page)
         # TODO: add filtering
         ad['city'] = self.get_city(dom)
@@ -160,7 +163,8 @@ class AvitoStandalone:
        # ad['placed_at'] = self.get_ad_date(dom)
         ad['contact_name'] = self.get_contact_name(dom)
         ad['category'] = self.get_category(dom)
-        Logger.info('Ad {} collected'.format(ad['link']))
+        end = time.time()
+        Logger.info('Ad {} collected. Time {}s'.format(ad['link'], end - start))
         Logger.debug('Ad Values' + str(ad))
         if not ad['agent']:
             await self.web_client.post_ad(RemoteServerSettings.PUSH_URL, ad)
@@ -193,7 +197,7 @@ class AvitoStandalone:
             for url in AvitoStandalone.get_start_urls():
                 tasks.append(loop.create_task(self.process_page(url)))
             await asyncio.wait(tasks)
-            await asyncio.sleep(61)
+            await asyncio.sleep(46)
 
     def execute(self):
         Logger.info('Starting the scrapper...')
