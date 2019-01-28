@@ -1,17 +1,18 @@
 
 class AvitoSettings:
-    LOCATION_PARTS = ['moskva']
+    LOCATION_PARTS = ['rossiya']
     SCRAPPING_DEPTH = 1
     AD_DEPTH = 16
     RANGE_LEFT = 0
     RANGE_RIGHT = 16
     ITERATION_LIMIT = 10000
     ETERNAL_SCRAPPING = True
-    EXCLUDE_AGENCY = True
+    EXCLUDE_AGENCY = False
     URL_FORMATS = [
-        'https://m.avito.ru/{}/kvartiry/sdam/na_dlitelnyy_srok?s=104&sort=date',
+        'https://m.avito.ru/{}/kvartiry?s=104&sort=date',
     ]
     BASE_MOBILE = 'https://m.avito.ru'
+
 
 class RemoteServerSettings:
     BASE_URL = 'moscow.zmservice.ru'
@@ -21,6 +22,7 @@ class RemoteServerSettings:
     GET_STREET_URL = 'http://{}/api/get_streets'.format(BASE_URL)
     GET_DISTRICT = False
     PUSH_LOGS = False
+
 
 class ProxySettings:
     #PROXY_LIST = 'ips-zone-processed.txt'

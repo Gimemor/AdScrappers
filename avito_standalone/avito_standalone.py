@@ -15,7 +15,6 @@ class AvitoStandalone:
     date_regex = re.compile(r"(?:размещено\s*)?(\d+\s*\w+|сегодня|вчера)", re.I)
     time_regex = re.compile(r"\d{1,2}:\d{1,2}")
 
-
     def __init__(self):
         self.proxy_manager = ProxyManager(ProxySettings)
         self.web_client = WebClient(self.proxy_manager)
@@ -186,13 +185,11 @@ class AvitoStandalone:
 
     # noinspection PyMethodMayBeStatic
     async def process_pages(self):
-        tasks = []
         loop = asyncio.get_running_loop()
         while True:
             for url in AvitoStandalone.get_start_urls():
-                tasks.append(loop.create_task(self.process_page(url)))
-            await asyncio.wait(tasks)
-            await asyncio.sleep(61)
+                loop.create_task(self.process_page(url))
+                await asyncio.sleep(2)
 
     def execute(self):
         Logger.info('Starting the scrapper...')

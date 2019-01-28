@@ -39,19 +39,22 @@ class WebClient:
         proxy = self.proxy_manager.get_random_proxy()
         Logger.info('Using proxy {}'.format(proxy))
         # try to get a page
-        response = await self.__get_internal(url, session, proxy)
-        # if response is not valid
-        if not response.ok:
-            # switch proxy
-            Logger.info('Response completed with {} error, switching proxy...'.format(response.status_code))
-            check_proxy = self.proxy_manager.get_random_proxy([proxy])
-            response = await  self.__get_internal(url, proxies=check_proxy)
+        try:
+            response = await self.__get_internal(url, session, proxy)
+            # if response is not valid
             if not response.ok:
-                Logger.error('Unable to get {}, status code {}'.format(url, response.status_code))
-                return None
-            Logger.info('Removing proxy {}'.format(proxy))
+                # switch proxy
+                Logger.info('Response completed with {} error, switching proxy...'.format(response.status_code))
+                check_proxy = self.proxy_manager.get_random_proxy([proxy])
+                response = await  self.__get_internal(url, proxies=check_proxy)
+                if not response.ok:
+                    Logger.error('Unable to get {}, status code {}'.format(url, response.status_code))
+                    return None
+                Logger.info('Removing proxy {}'.format(proxy))
+                self.proxy_manager.delete_proxy(proxy)
+            return response.text
+        except requests.exceptions.ProxyError:
             self.proxy_manager.delete_proxy(proxy)
-        return response.text
 
     async def post_ad(self, url, ad):
         ad['placed_at'] = str(ad['placed_at'])

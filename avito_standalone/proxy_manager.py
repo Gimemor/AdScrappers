@@ -24,7 +24,7 @@ class ProxyManager:
 
     def delete_proxy(self, current_proxy):
         self.proxies.remove(current_proxy)
-        if len(proxy) == 0:
+        if len(self.proxies) == 0:
             Logger.debug('PROXY LIST IS EMPTY')
             raise Exception('Empty Proxy List')
 
