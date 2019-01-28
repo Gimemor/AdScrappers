@@ -2,6 +2,7 @@ import asyncio
 import requests
 import sys
 import json
+import time
 from fake_useragent import UserAgent
 from logger import Logger
 
@@ -15,7 +16,14 @@ class WebClient:
         headers={
             'User-Agent':  session['UA']
         }
-        return asyncio.get_running_loop().run_in_executor(None, lambda: session['SESSION'].get(url, headers=headers, proxies=proxy))
+        def task():
+            start = time.time()
+            Logger.info('Using proxy {}'.format(proxy))
+            response = session['SESSION'].get(url, headers = headers, proxies = proxy)
+            end = time.time()
+            Logger.info('[GET] {}: Finished. Time {}s'.format( url, end - start))
+            return response	
+        return asyncio.get_running_loop().run_in_executor(None, task)
 
     def __post_internal(self, url, ad):
         def task():
@@ -37,7 +45,6 @@ class WebClient:
     async def get(self, url, session):
         # get proxy
         proxy = self.proxy_manager.get_random_proxy()
-        Logger.info('Using proxy {}'.format(proxy))
         # try to get a page
         try:
             response = await self.__get_internal(url, session, proxy)

@@ -3,6 +3,7 @@ import sys
 import asyncio
 import re
 import datetime
+import time
 from lxml import html
 from config import AvitoSettings, ProxySettings, RemoteServerSettings
 from proxy_manager import ProxyManager
@@ -86,7 +87,7 @@ class AvitoStandalone:
 
     def is_agent(self, response):
         result = response.xpath('//div[@class="_1qEI9"]//div[@class = "_1Jm7J"]/text()')
-        return 'Посредник' in result[0] if result else None
+        return 'Посредник' in result if result else None
 
     def get_title(self, response):
         result = response.xpath("//h1[@data-marker='item-description/title']//span[@class='CdyRB _3SYIM _2jvRd']/text()")
@@ -145,6 +146,8 @@ class AvitoStandalone:
         page = await self.web_client.get(ad['link'], session)
         if page is None:
             return
+        Logger.info('Parsing is starting: {}'.format(ad['link']))
+        start  = time.time()
         dom = html.fromstring(page)
         # TODO: add filtering
         ad['city'] = self.get_city(dom)
@@ -159,9 +162,11 @@ class AvitoStandalone:
        # ad['placed_at'] = self.get_ad_date(dom)
         ad['contact_name'] = self.get_contact_name(dom)
         ad['category'] = self.get_category(dom)
-        Logger.info('Ad {} collected'.format(ad['link']))
+        end = time.time()
+        Logger.info('Ad {} collected. Time {}s'.format(ad['link'], end - start))
         Logger.debug('Ad Values' + str(ad))
-        await self.web_client.post_ad(RemoteServerSettings.PUSH_URL, ad)
+        if not ad['agent']:
+            await self.web_client.post_ad(RemoteServerSettings.PUSH_URL, ad)
 
     async def process_page(self, url):
         session = self.web_client.get_session()
