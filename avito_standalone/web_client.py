@@ -11,25 +11,31 @@ class WebClient:
     def __init__(self, proxy_manager):
         self.proxy_manager = proxy_manager
         self.ua = UserAgent()
+        self.base_session = self.get_session()
 
     def __get_internal(self, url, session, proxy):
         headers={
             'User-Agent':  session['UA']
         }
+
         def task():
             start = time.time()
             Logger.info('Using proxy {}'.format(proxy))
             response = session['SESSION'].get(url, headers = headers, proxies = proxy)
             end = time.time()
             Logger.info('[GET] {}: Finished. Time {}s'.format( url, end - start))
-            return response	
+            return response
+
         return asyncio.get_running_loop().run_in_executor(None, task)
 
     def __post_internal(self, url, ad):
         def task():
-            response = requests.post(url,
-                          data=json.dumps({'order': ad}),
-                          headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+            start = time.time()
+            response = self.base_session['SESSION'].post(url,
+                                     data=json.dumps({'order': ad}),
+                                     headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+            end = time.time()
+            Logger.info('[POST] {}: Finished. Time {}s'.format(url, end - start))
             return response
         return asyncio.get_running_loop().run_in_executor(None, task)
 

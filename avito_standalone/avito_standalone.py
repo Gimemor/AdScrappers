@@ -4,6 +4,7 @@ import asyncio
 import re
 import datetime
 import time
+import math
 from lxml import html
 from config import AvitoSettings, ProxySettings, RemoteServerSettings
 from proxy_manager import ProxyManager
@@ -37,7 +38,7 @@ class AvitoStandalone:
         if first == 'сегодня':
             return datetime.datetime.utcnow()
         if first == 'вчера':
-            return datetime.date.utcnow() - datetime.timedelta(days=1)
+            return datetime.datetime.utcnow() - datetime.timedelta(days=1)
         result = month_format(first)
         return datetime.datetime.strptime(result, '%d %m %Y')
 
@@ -47,22 +48,28 @@ class AvitoStandalone:
         if not time:
             return datetime.timedelta(0, 0)
         t = time[0].lower().split(':')
-        return datetime.timedelta(hours=int(t[0]), minutes=int(t[1]))
 
-    # noinspection PyMethodMayBeStatic
+        hours = int(t[0])
+        minutes = int(t[1])
+        now = datetime.datetime.utcnow().time()
+        seconds = now.second if now.second <= 30 else 0
+        minutes = minutes + 1 if now.second > 30 else minutes
+        return datetime.timedelta(hours=hours, minutes=minutes, seconds=seconds)
+
+    # noinspection PyMethodMayBeStati
+    # c
     def get_ad_date_inner(self, raw_data):
         dt = self.get_date_from_description(raw_data)
-        time = self.get_time_from_description(raw_data)
-        return datetime.datetime(dt.year, dt.month, dt.day) + time
+        t = self.get_time_from_description(raw_data)
+        return datetime.datetime(dt.year, dt.month, dt.day) + t
 
     # noinspection PyMethodMayBeStatic
     def get_ad_data_from_category(self, item):
         link = item.xpath('.//a[contains(@class, \'MBUbs eXo1j e-2RA\')]/@href')[0]
         return {
             'link': AvitoSettings.BASE_MOBILE + link,
-            'placed_at': self.get_ad_date_from_category(item) + datetime.timedelta(hours=3)
+            'placed_at': self.get_ad_date_from_category(item)
         }
-
 
     def get_ad_date_from_category(self, item):
         response = item.xpath('.//div[contains(@class, \'_2owEx _2cW1K\')]/text()')
@@ -135,7 +142,9 @@ class AvitoStandalone:
         raw_data = response.xpath("//span[@class='_1dHGK']/text()")
         if not raw_data:
             return None
-        return self.get_ad_date_inner(raw_data[0])
+        result = self.get_ad_date_inner(raw_data[0]) + datetime.timedelta(hours=3)
+        Logger.info('{} | {}'.format(raw_data[0], result))
+        return result
 
     def get_city(self, response):
         address = self.get_mobile_address(response)
@@ -147,7 +156,7 @@ class AvitoStandalone:
         if page is None:
             return
         Logger.info('Parsing is starting: {}'.format(ad['link']))
-        start  = time.time()
+        start = time.time()
         dom = html.fromstring(page)
         # TODO: add filtering
         ad['city'] = self.get_city(dom)
@@ -159,7 +168,7 @@ class AvitoStandalone:
         ad['address'] = self.get_mobile_address(dom)
         ad['agent'] = self.is_agent(dom)
         ad['cost'] = self.get_price(dom)
-       # ad['placed_at'] = self.get_ad_date(dom)
+        ad['placed_at'] = self.get_ad_date(dom)
         ad['contact_name'] = self.get_contact_name(dom)
         ad['category'] = self.get_category(dom)
         end = time.time()
@@ -179,11 +188,11 @@ class AvitoStandalone:
         tasks = []
         for item in tree.xpath('//div[contains(@class, "_328WR _2PXTe")]'):
             ad = self.get_ad_data_from_category(item)
-            if ad['placed_at'] >= datetime.datetime.now() - datetime.timedelta(minutes=15) \
+            if ad['placed_at'] >= datetime.datetime.utcnow() - datetime.timedelta(minutes=4) \
                     and not ad['link'] in self.duplicates:
                 self.duplicates[ad['link']] = True
                 tasks.append(loop.create_task(self.process_ad(ad, session)))
-
+                break
         if len(tasks) > 0:
             await asyncio.wait(tasks)
         self.web_client.close_session(session)
@@ -191,10 +200,11 @@ class AvitoStandalone:
     # noinspection PyMethodMayBeStatic
     async def process_pages(self):
         loop = asyncio.get_running_loop()
+        tasks = []
         while True:
             for url in AvitoStandalone.get_start_urls():
-                loop.create_task(self.process_page(url))
-                await asyncio.sleep(2)
+                tasks += [loop.create_task(self.process_page(url))]
+            await asyncio.sleep(15)
 
     def execute(self):
         Logger.info('Starting the scrapper...')

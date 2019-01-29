@@ -1,6 +1,6 @@
 
 class AvitoSettings:
-    LOCATION_PARTS = ['rossiya']
+    LOCATION_PARTS = ['moskva']
     SCRAPPING_DEPTH = 1
     AD_DEPTH = 16
     RANGE_LEFT = 0
@@ -9,7 +9,7 @@ class AvitoSettings:
     ETERNAL_SCRAPPING = True
     EXCLUDE_AGENCY = False
     URL_FORMATS = [
-        'https://m.avito.ru/{}/kvartiry?s=104&sort=date',
+        'https://m.avito.ru/{}/kvartiry/sdam/na_dlitelnyy_srok?s=104&sort=date',
     ]
     BASE_MOBILE = 'https://m.avito.ru'
 
