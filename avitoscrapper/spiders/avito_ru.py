@@ -156,6 +156,11 @@ class AvitoRuSpider(scrapy.Spider):
             return data[2]
         return data
 
+    def is_new_building(self, response):
+        data = response.xpath("//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()
+        return data[-1] == 'Новостройки' if data else False
+
+
     # noinspection PyMethodMayBeStatic
     def get_ad_date(self, response):
         raw_data = response.xpath("//div[contains(@class, 'title-info-metadata-item')]/text()").extract_first()
@@ -235,6 +240,7 @@ class AvitoRuSpider(scrapy.Spider):
         ad_loader.add_value('floor_count', self.get_floor_count(response))
         ad_loader.add_value('contact_name', self.get_contact_name(response))
         ad_loader.add_value('image_list', self.get_image_list(response))
+        ad_loader.add_value('new_building', self.is_new_building(response))
         url = response.url.replace('www.', 'm.')
         yield response.follow(url, callback=self.parse_mobile, meta={'ad_loader': ad_loader})
 

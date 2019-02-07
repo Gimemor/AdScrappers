@@ -143,6 +143,15 @@ class BazarpnzSpider(scrapy.Spider):
         return 'Комнат: {}'.format(result[0]) if result else 'Неизвестно'
 
     # noinspection PyMethodMayBeStatic
+    def is_new_building(self, response):
+        category_number = '4'
+        if 'i58.ru' in response.url:
+            category_number = '5'
+        breadcrumb_category = response.xpath(
+            '//div[contains(@id, \'nav\')]/a[' + category_number + ']/text()').extract_first()
+        return breadcrumb_category == 'Новостройки' if breadcrumb_category is not None else False
+
+    # noinspection PyMethodMayBeStatic
     def get_total_square(self, response):
         regexp = re.compile("Общая\s*площадь:\s*(\d+)\s*", re.I)
         elements = '\n'.join(response.xpath("//p[@class='contact_info']/text()").extract())
@@ -210,6 +219,7 @@ class BazarpnzSpider(scrapy.Spider):
         ad_loader.add_value('contact_name', self.get_contact_name(response))
         ad_loader.add_value('floor', self.get_floor(response))
         ad_loader.add_value('image_list', self.get_image_list(response))
+        ad_loader.add_value('new_building', self.is_new_building(response))
         """
         # plot_size
         ad_loader.add_value('plot_size', self.get_total_square(response))

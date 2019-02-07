@@ -118,6 +118,12 @@ class CianSpider(scrapy.Spider):
         raw = response.xpath("//div[@class='a10a3f92e9--breadcrumbs--1kChM']/span[3]/a/@title").extract_first()
         return raw if raw else "Неизвестно"
 
+    def is_new_building(self, response):
+        raw = response.xpath(
+            '//span[contains(@class,"a10a3f92e9--value--3Ftu5") and contains(ancestor::li/child::span["a10a3f92e9--name--3bt8k"]/text(), "Тип жилья")]').extract_first()
+        print(raw)
+        return raw == 'Новостройка' if raw else False
+
     # noinspection PyMethodMayBeStatic
     def get_category_from_page(self, response):
         raw = response.xpath('//a[contains(@class, \'a10a3f92e9--link--378yo\')]/span/text()').extract()[2]
@@ -176,7 +182,7 @@ class CianSpider(scrapy.Spider):
         ad_loader.add_value('plot_size', self.get_total_square(response))
         """
         ad_loader.add_value('floor_count', self.get_floor_count(response))
-
+        ad_loader.add_value('new_building', self.is_new_building(response))
         return ad_loader.load_item()
 
     # noinspection PyMethodMayBeStatic

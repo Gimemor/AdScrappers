@@ -28,3 +28,4 @@ class Ad(scrapy.Item):
     contact_name = scrapy.Field(output_processor=TakeFirst())
     image_list = scrapy.Field()
     district = scrapy.Field(output_processor=TakeFirst())
+    new_building = scrapy.Field(output_processor=TakeFirst())
