@@ -33,12 +33,12 @@ class AvitoStandalone:
     def get_date_from_description(self, raw_data):
         date = self.date_regex.findall(raw_data)
         if not date:
-            return datetime.datetime.utcnow()
+            return datetime.datetime.now()
         first = date[0].lower()
         if first == 'сегодня':
-            return datetime.datetime.utcnow()
+            return datetime.datetime.now()
         if first == 'вчера':
-            return datetime.datetime.utcnow() - datetime.timedelta(days=1)
+            return datetime.datetime.now() - datetime.timedelta(days=1)
         result = month_format(first)
         return datetime.datetime.strptime(result, '%d %m %Y')
 
@@ -51,7 +51,7 @@ class AvitoStandalone:
 
         hours = int(t[0])
         minutes = int(t[1])
-        now = datetime.datetime.utcnow().time()
+        now = datetime.datetime.now().time()
         seconds = now.second if now.second <= 30 else 0
         minutes = minutes + 1 if now.second > 30 else minutes
         return datetime.timedelta(hours=hours, minutes=minutes, seconds=seconds)
@@ -142,7 +142,7 @@ class AvitoStandalone:
         raw_data = response.xpath("//span[@class='_1dHGK']/text()")
         if not raw_data:
             return None
-        result = self.get_ad_date_inner(raw_data[0]) + datetime.timedelta(hours=3)
+        result = self.get_ad_date_inner(raw_data[0])
         Logger.info('{} | {}'.format(raw_data[0], result))
         return result
 
@@ -171,6 +171,7 @@ class AvitoStandalone:
         ad['placed_at'] = self.get_ad_date(dom)
         ad['contact_name'] = self.get_contact_name(dom)
         ad['category'] = self.get_category(dom)
+        Logger.info('order date: {}'.format( ad['placed_at']))
         end = time.time()
         Logger.info('Ad {} collected. Time {}s'.format(ad['link'], end - start))
         Logger.debug('Ad Values' + str(ad))
@@ -188,7 +189,8 @@ class AvitoStandalone:
         tasks = []
         for item in tree.xpath('//div[contains(@class, "_328WR _2PXTe")]'):
             ad = self.get_ad_data_from_category(item)
-            if ad['placed_at'] >= datetime.datetime.utcnow() - datetime.timedelta(minutes=4) \
+            Logger.info('comparing ad {} with {}'.format(ad['placed_at'], datetime.datetime.now()))
+            if ad['placed_at'] >= datetime.datetime.now() - datetime.timedelta(minutes=4) \
                     and not ad['link'] in self.duplicates:
                 self.duplicates[ad['link']] = True
                 tasks.append(loop.create_task(self.process_ad(ad, session)))
