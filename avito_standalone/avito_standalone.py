@@ -177,6 +177,8 @@ class AvitoStandalone:
         Logger.debug('Ad Values' + str(ad))
         if not ad['agent']:
             await self.web_client.post_ad(RemoteServerSettings.PUSH_URL, ad)
+        else:
+            Logger.info('{} is an agent'.format(ad['link']))
 
     async def process_page(self, url):
         session = self.web_client.get_session()
@@ -189,7 +191,7 @@ class AvitoStandalone:
         tasks = []
         for item in tree.xpath('//div[contains(@class, "_328WR _2PXTe")]'):
             ad = self.get_ad_data_from_category(item)
-            Logger.info('comparing ad {} with {}'.format(ad['placed_at'], datetime.datetime.now()))
+            Logger.info('comparing ad {} with {}'.format(ad['placed_at'], datetime.datetime.now() - datetime.timedelta(minutes = 4)))
             if ad['placed_at'] >= datetime.datetime.now() - datetime.timedelta(minutes=4) \
                     and not ad['link'] in self.duplicates:
                 self.duplicates[ad['link']] = True
