@@ -5,6 +5,8 @@ avitoscrapper/config.py
 avito_standalone/output.*
 chromedriver
 output.json
+output.txt
+output.log
 offers.xlsx
 _oldchromedriver
 .idea
