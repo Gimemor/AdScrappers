@@ -203,7 +203,7 @@ class CianSpider(scrapy.Spider):
         return datetime.datetime.strptime(result, '%d %m %Y')
 
     def parse(self, response):
-        items = response.xpath("//a[contains(@class, 'c6e8ba5398-header--1_m0_')]/@href").extract()
+        items = response.xpath("//a[contains(@class, 'c6e8ba5398--header--1Cu_4')]/@href").extract()
         for item in items:
             CianSpider.total_count += 1
             yield response.follow(item, headers={"Referer": response.url, "Host": "penza.cian.ru"}, callback=self.parse_ad)

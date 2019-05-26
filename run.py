@@ -12,9 +12,9 @@ from avitoscrapper.logger import Logger
 from avitoscrapper.config import RemoteServerSettings
 
 scrappers = [
-# AvitoRuSpider,
+ AvitoRuSpider,
  CianSpider,
-# BazarpnzSpider
+ BazarpnzSpider
 ]
 
 sys.path.append(os.getcwd())
