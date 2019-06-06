@@ -47,5 +47,6 @@ class RemoteServerSettings:
     GET_DISTRICT = True
 
 class ProxySettings:
-    PROXY_LIST = 'ips-zone-processed.txt'
-    #PROXY_LIST = '../ips-processed.test'
+    #PROXY_LIST = 'ips-zone-processed.test'
+    #PROXY_LIST = 'ips-small.test'
+    PROXY_LIST = 'checked_proxies.txt'

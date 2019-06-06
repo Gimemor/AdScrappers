@@ -12,7 +12,8 @@ from ..logger import Logger
 class AvitoRuSpider(scrapy.Spider):
     name = 'avito.ru'
     allowed_domains = ['avito.ru']
-
+    USER_AGENT = 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/70.0.3538.77 Chrome/70.0.3538.77 Safari/537.36'
+    MOBILE_USER_AGENT = "Mozilla/5.0 (Linux; U; Android 2.2) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1"
     item_selector = '//div[contains(@class, \'item_table clearfix js-catalog-item-enum\')]'
     date_regex = re.compile(r"размещено\s*(\d+\s*\w+|сегодня|вчера)", re.I)
     time_regex = re.compile(r"\d\d:\d\d")
@@ -139,7 +140,7 @@ class AvitoRuSpider(scrapy.Spider):
         if data is None:
             Logger.log('Warning', 'Image list not found')
             return None
-        return data.extract()
+        return [ x.replace("//", "") for x in data.extract()]
 
     # noinspection PyMethodMayBeStatic
     def get_cost(self, response):
@@ -216,11 +217,13 @@ class AvitoRuSpider(scrapy.Spider):
         if AvitoSettings.EXCLUDE_AGENCY and is_agent:
             print('=' * 5 + 'Посредник')
             return None
+
+        print(ad_loader.load_item())
         return ad_loader.load_item()
 
     def parse_ad(self, response):
         """
-        @url https://www.avito.ru/penza/garazhi_i_mashinomesta/garazh_24_m_930948494
+        @url https://www.avito.ru/penza/doma_dachi_kottedzhi/dom_42_m_na_uchastke_4_sot._1238892161
         """
         ad_loader = ItemLoader(item=Ad(), response=response)
         ad_loader.add_xpath('title', '//span[contains(@class, \'title-info-title-text\')]/text()')
@@ -242,7 +245,7 @@ class AvitoRuSpider(scrapy.Spider):
         ad_loader.add_value('image_list', self.get_image_list(response))
         ad_loader.add_value('new_building', self.is_new_building(response))
         url = response.url.replace('www.', 'm.')
-        yield response.follow(url, callback=self.parse_mobile, meta={'ad_loader': ad_loader})
+        yield response.follow(url, callback=self.parse_mobile, meta={'ad_loader': ad_loader}, headers={'User-Agent': AvitoRuSpider.MOBILE_USER_AGENT})
 
     def parse(self, response):
         result = []
@@ -279,5 +282,5 @@ class AvitoRuSpider(scrapy.Spider):
             return result
         print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[location],
                                                                   AvitoSettings.SCRAPPING_DEPTH))
-        result.append(response.follow(url, callback=self.parse))
+        #result.append(response.follow(url, callback=self.parse))
         return result
