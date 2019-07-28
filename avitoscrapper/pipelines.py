@@ -41,9 +41,11 @@ class AvitoscrapperPipeline(object):
             self.street_map = AvitoscrapperPipeline.get_street_map()
         else:
             self.street_map = None
-        self.categories = AvitoscrapperPipeline.get_categories()
-        
-
+        cat_list = AvitoscrapperPipeline.get_categories()
+        print(cat_list)
+        self.categories = {}
+        for i in cat_list: 
+              self.categories[i['name']] = i['id']
     @staticmethod
     def get_street_map():
         url = RemoteServerSettings.GET_STREET_URL
@@ -71,9 +73,10 @@ class AvitoscrapperPipeline(object):
                 print(result['district_id'])
 
         if not item['category'] in self.categories:
-            self.categories += [ item['category'] ]
-            AvitoscrapperPipeline.add_category(item['category'])
-   
+            cat_result =AvitoscrapperPipeline.add_category(item['category'])
+            self.categories[item['category']] = cat_result['id']
+        result['category_id'] = self.categories[item['category']]
+
         response = requests.post(AvitoscrapperPipeline.push_url,
                                  data=json.dumps({'order': result}),
                                  headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
@@ -95,8 +98,10 @@ class AvitoscrapperPipeline(object):
         response = requests.post(AvitoscrapperPipeline.add_category_url, 
                data=json.dumps({'category': result}),
                headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
-        print(response.content)
-  
+        result = json.loads(response.text)
+
+        print(result)
+        return result  
     @staticmethod
     def normalize_string(s):
         if s is None:
