@@ -44,6 +44,8 @@ class RemoteServerSettings:
     LOG_URL = 'http://{}/api/create_log.json'.format(BASE_URL)
     DELETE_URL = 'http://{}/api/remove_old.json'.format(BASE_URL)
     GET_STREET_URL = 'http://{}/api/get_streets'.format(BASE_URL)
+    GET_CATEGORY_URL = 'http://{}/api/get_categories'.format(BASE_URL)
+    ADD_CATEGORY_URL = 'http://{}/api/create_category'.format(BASE_URL)
     GET_DISTRICT = True
 
 class ProxySettings:

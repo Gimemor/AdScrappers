@@ -140,7 +140,7 @@ class AvitoRuSpider(scrapy.Spider):
         if data is None:
             Logger.log('Warning', 'Image list not found')
             return None
-        return [ x.replace("//", "") for x in data.extract()]
+        return [  "http:" + x for x in data.extract()]
 
     # noinspection PyMethodMayBeStatic
     def get_cost(self, response):
@@ -282,5 +282,5 @@ class AvitoRuSpider(scrapy.Spider):
             return result
         print('Current depth is {}, scrapping_depth is {}'.format(self.current_depth[location],
                                                                   AvitoSettings.SCRAPPING_DEPTH))
-        #result.append(response.follow(url, callback=self.parse))
+        result.append(response.follow(url, callback=self.parse))
         return result

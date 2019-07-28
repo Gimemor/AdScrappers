@@ -203,16 +203,23 @@ class CianSpider(scrapy.Spider):
         return datetime.datetime.strptime(result, '%d %m %Y')
 
     def parse(self, response):
-        items = response.xpath("//a[contains(@class, 'c6e8ba5398--header--1Cu_4')]/@href").extract()
+        items = response.xpath("//a[contains(@class, 'c6e8ba5398--header--1fV2A')]/@href").extract()
         for item in items:
             CianSpider.total_count += 1
             yield response.follow(item, headers={"Referer": response.url, "Host": "penza.cian.ru"}, callback=self.parse_ad)
         print(CianSpider.total_count)
-        subblocks = response.xpath("//a[contains(@class, 'c6e8ba5398-sub-block--21VAX c6e8ba5398-similar--3RghR')]/@href").extract()
+        subblocks = response.xpath("//a[contains(@class, 'c-14e8ba5398--other_offers--2E8wn')]/@href").extract()
+        for block in subblocks:
+            yield response.follow(block, callback=self.parse, meta={'dont_merge_cookies': True})
+
+        subblocks = response.xpath("//a[contains(@class, '8ba5398--sub-block--1lgdx c6e8ba5398--similar--14fF7')]")
+        for block in subblocks:
+            yield response.follow(block, callback=self.parse, meta={'dont_merge_cookies': True})
+        subblocks = response.xpath("//a[contains(@class, 'c6e8ba5398--other_offers--2E8wn')]")
         for block in subblocks:
             yield response.follow(block, callback=self.parse, meta={'dont_merge_cookies': True})
         url = response.xpath(
-            '//li[contains(@class, \'93444fe79c-list-item--2QgXB _93444fe79c-list-item--active--2-sVo\')]/following-sibling::li/a/@href') \
+            '//li[contains(@class, \'_93444fe79c--list-item--2KxXr _93444fe79c--list-item--active--3dOSi\')]/following-sibling::li/a/@href') \
             .extract_first()
         if url:
             yield response.follow(url, callback=self.parse, meta={'dont_merge_cookies': True})

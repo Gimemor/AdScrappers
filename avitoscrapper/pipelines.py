@@ -13,6 +13,8 @@ from .config import RemoteServerSettings
 
 class AvitoscrapperPipeline(object):
     push_url = RemoteServerSettings.PUSH_URL
+    get_category_url = RemoteServerSettings.GET_CATEGORY_URL
+    add_category_url = RemoteServerSettings.ADD_CATEGORY_URL
 
     category_map = {
         # AVITO
@@ -39,6 +41,8 @@ class AvitoscrapperPipeline(object):
             self.street_map = AvitoscrapperPipeline.get_street_map()
         else:
             self.street_map = None
+        self.categories = AvitoscrapperPipeline.get_categories()
+        
 
     @staticmethod
     def get_street_map():
@@ -65,12 +69,34 @@ class AvitoscrapperPipeline(object):
             self.get_district(result)
             if 'district_id' in result:
                 print(result['district_id'])
+
+        if not item['category'] in self.categories:
+            self.categories += [ item['category'] ]
+            AvitoscrapperPipeline.add_category(item['category'])
+   
         response = requests.post(AvitoscrapperPipeline.push_url,
                                  data=json.dumps({'order': result}),
                                  headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
         print(response.content)
         return item
 
+    @staticmethod
+    def get_categories():
+        response = requests.get(AvitoscrapperPipeline.get_category_url, 
+		headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+        data = json.loads(response.text)
+        print(data)
+        return data
+
+    @staticmethod
+    def add_category(name):
+        result = {'name': name }
+        print(json.dumps({'category': result}))
+        response = requests.post(AvitoscrapperPipeline.add_category_url, 
+               data=json.dumps({'category': result}),
+               headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
+        print(response.content)
+  
     @staticmethod
     def normalize_string(s):
         if s is None:
