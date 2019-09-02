@@ -12,9 +12,9 @@ from avitoscrapper.logger import Logger
 from avitoscrapper.config import RemoteServerSettings
 
 scrappers = [
- AvitoRuSpider,
+# AvitoRuSpider
  CianSpider,
- BazarpnzSpider
+# BazarpnzSpider
 ]
 
 sys.path.append(os.getcwd())
@@ -26,5 +26,5 @@ for scrapper in scrappers:
 process.start()
 Logger.log("INFO", "Stopping the realty scrappers")
 Logger.log("INFO", "Calling for the clean")
-#r = requests.delete(RemoteServerSettings.DELETE_URL)
+r = requests.delete(RemoteServerSettings.DELETE_URL)
 print(r.content)

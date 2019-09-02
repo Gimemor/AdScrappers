@@ -17,7 +17,7 @@ class BazarpnzSpider(scrapy.Spider):
     allowed_domains = ['bazarpnz.ru', 'i58.ru']
     custom_settings = {
         'ROBOTSTXT_OBEY': True,
-        'DOWNLOAD_DELAY': 1.1
+        'DOWNLOAD_DELAY': 21.1
     }
     start_urls = [
         # the S param must be the last one since we use that to determine order type
@@ -187,7 +187,11 @@ class BazarpnzSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_image_list(self, response):
-        pass
+        raw = response.xpath('//a[contains(@class, "big_photo")]/@href')
+        if not raw:
+            return []
+        hrefs = raw.extract()
+        return [BazarpnzSpider.name + x for x in hrefs]
 
     # noinspection PyMethodMayBeStatic
     def parse_ad(self, response):

@@ -17,11 +17,11 @@ NEWSPIDER_MODULE = 'avitoscrapper.spiders'
 RETRY_TIMES = 10
 # Retry on most error codes since proxies fail for different reasons
 RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
-PROXY_LIST = ProxySettings.PROXY_LIST
+#PROXY_LIST = ProxySettings.PROXY_LIST
 DOWNLOADER_MIDDLEWARES = {
     'scrapy.downloadermiddlewares.useragent.UserAgentMiddleware': 1,
 #    'scrapy.downloadermiddlewares.retry.RetryMiddleware': 90,
-    'avitoscrapper.middlewares.RandomProxy': 1000,
+#    'avitoscrapper.middlewares.RandomProxy': 1000,
 #    'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 110,
 #    'scrapy_fake_useragent.middleware.RandomUserAgentMiddleware': 400,
 }

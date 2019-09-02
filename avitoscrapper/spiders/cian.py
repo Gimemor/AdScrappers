@@ -152,7 +152,13 @@ class CianSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_image_list(self, response):
-        return response.xpath("//img[@class='a10a3f92e9--photo--3ybE1']/@src").extract()
+        main = response.xpath("//img[@class='a10a3f92e9--photo--3ybE1']/@src").extract()
+        if not main:
+            main = []
+        other = response.xpath("//img[@class='fotorama__img']/@src").extract()
+        if not other:
+            other = []
+        return main + other
 
     def parse_ad(self, response):
         """

@@ -45,7 +45,8 @@ class AvitoscrapperPipeline(object):
         print(cat_list)
         self.categories = {}
         for i in cat_list: 
-              self.categories[i['name']] = i['id']
+              self.categories[i['name']] = (i['id'], i['mapping'])
+
     @staticmethod
     def get_street_map():
         url = RemoteServerSettings.GET_STREET_URL
@@ -72,10 +73,24 @@ class AvitoscrapperPipeline(object):
             if 'district_id' in result:
                 print(result['district_id'])
 
-        if not item['category'] in self.categories:
-            cat_result =AvitoscrapperPipeline.add_category(item['category'])
+        category_found = False
+        for key in self.categories:
+            if key == item['category']:
+                result['category_id'] = self.categories[key][0]
+                category_found = True
+                break
+            raw_mapping = self.categories[key][1]
+            if not raw_mapping:
+                continue
+            mapping = raw_mapping.split("|")
+            if item['category'] in mapping:
+                result['category_id'] = self.categories[key][0]
+                category_found = True
+
+        if not category_found:
+            cat_result = AvitoscrapperPipeline.add_category(item['category'])
             self.categories[item['category']] = cat_result['id']
-        result['category_id'] = self.categories[item['category']]
+            result['category_id'] = self.categories[item['category']]
 
         response = requests.post(AvitoscrapperPipeline.push_url,
                                  data=json.dumps({'order': result}),
@@ -85,7 +100,7 @@ class AvitoscrapperPipeline(object):
 
     @staticmethod
     def get_categories():
-        response = requests.get(AvitoscrapperPipeline.get_category_url, 
+        response = requests.get(AvitoscrapperPipeline.get_category_url,
 		headers={'Accept': 'application/json', 'Content-Type': 'application/json'})
         data = json.loads(response.text)
         print(data)
