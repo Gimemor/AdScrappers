@@ -136,11 +136,11 @@ class AvitoRuSpider(scrapy.Spider):
 
     # noinspection PyMethodMayBeStatic
     def get_image_list(self, response):
-        data = response.xpath('//div[contains(@class, \'gallery-img-wrapper\')]//img/@src')
+        data = response.xpath('//div[contains(@class, \'gallery-img-frame\')]//@data-url')
         if data is None:
             Logger.log('Warning', 'Image list not found')
             return None
-        return [  "http:" + x for x in data.extract()]
+        return ["http:" + x for x in data.extract()]
 
     # noinspection PyMethodMayBeStatic
     def get_cost(self, response):

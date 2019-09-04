@@ -51,4 +51,5 @@ class RemoteServerSettings:
 class ProxySettings:
     #PROXY_LIST = 'ips-processed.test'
     #PROXY_LIST = 'ips-small.test'
-    PROXY_LIST = 'checked_proxies.txt'
+    #PROXY_LIST = 'checked_proxies.txt'
+    PROXY_LIST = 'ips-zone-processed.txt'

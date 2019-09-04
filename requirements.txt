@@ -5,7 +5,7 @@ openpyxl
 pandas
 xlrd
 js2py
-#scrapy-fake-useragent
+scrapy-fake-useragent
 #scrapy_proxies
 #certifi
 #python-daemon
