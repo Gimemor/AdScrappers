@@ -1,4 +1,4 @@
-file_name = 'ips-static-2.txt'
+file_name = 'ips-zone1.txt'
 with open(file_name, 'r') as f:
 	lines = f.readlines()
 	for line in lines:

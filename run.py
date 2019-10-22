@@ -12,7 +12,7 @@ from avitoscrapper.logger import Logger
 from avitoscrapper.config import RemoteServerSettings
 
 scrappers = [
- AvitoRuSpider,
+ #AvitoRuSpider,
  #CianSpider,
  BazarpnzSpider
 ]

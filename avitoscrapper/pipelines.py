@@ -89,7 +89,7 @@ class AvitoscrapperPipeline(object):
 
         if not category_found:
             cat_result = AvitoscrapperPipeline.add_category(item['category'])
-            self.categories[item['category']] = cat_result['id']
+            self.categories[item['category']] = (cat_result['id'], None)
             result['category_id'] = self.categories[item['category']]
 
         response = requests.post(AvitoscrapperPipeline.push_url,

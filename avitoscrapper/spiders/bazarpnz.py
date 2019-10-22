@@ -17,7 +17,7 @@ class BazarpnzSpider(scrapy.Spider):
     allowed_domains = ['bazarpnz.ru', 'i58.ru']
     custom_settings = {
         'ROBOTSTXT_OBEY': True,
-        'DOWNLOAD_DELAY': 21.1
+        'DOWNLOAD_DELAY': 3.1
     }
     start_urls = [
         # the S param must be the last one since we use that to determine order type

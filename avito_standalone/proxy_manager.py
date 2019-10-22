@@ -4,10 +4,10 @@ import random
 from config import ProxySettings
 from logger import Logger
 
+
 class ProxyManager:
     def __init__(self, settings):
         self.proxies = self.get_proxies(settings)
-        pass
 
     @staticmethod
     def get_proxies(settings):

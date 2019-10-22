@@ -154,7 +154,12 @@ class AvitoRuSpider(scrapy.Spider):
         data = self.get_room_count(response)
         if not data:
             data = response.xpath("//a[contains(@class, 'js-breadcrumbs-link-interaction')]/text()").extract()
-            return data[2]
+            if data[2]:
+                return data[2]
+            url = response.url.split('/')[4]
+            if len(url) > 4:
+                return url[4]
+            return 'Без категории'
         return data
 
     def is_new_building(self, response):

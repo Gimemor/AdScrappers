@@ -39,7 +39,7 @@ class CianSettings:
 
 
 class RemoteServerSettings:
-    BASE_URL = 'realty.zmservice.ru'
+    BASE_URL = 'online-n.ru'
     PUSH_URL = 'http://{}/api/create_order.json'.format(BASE_URL)
     LOG_URL = 'http://{}/api/create_log.json'.format(BASE_URL)
     DELETE_URL = 'http://{}/api/remove_old.json'.format(BASE_URL)
@@ -48,8 +48,6 @@ class RemoteServerSettings:
     ADD_CATEGORY_URL = 'http://{}/api/create_category'.format(BASE_URL)
     GET_DISTRICT = True
 
+
 class ProxySettings:
-    #PROXY_LIST = 'ips-processed.test'
-    #PROXY_LIST = 'ips-small.test'
-    #PROXY_LIST = 'checked_proxies.txt'
-    PROXY_LIST = 'ips-zone-processed.txt'
+    PROXY_LIST = 'test.txt'
