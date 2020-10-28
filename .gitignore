@@ -10,3 +10,5 @@ output.log
 offers.xlsx
 _oldchromedriver
 .idea
+lib/
+venv/
